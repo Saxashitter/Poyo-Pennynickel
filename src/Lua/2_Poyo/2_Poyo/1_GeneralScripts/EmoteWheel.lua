@@ -31,7 +31,7 @@ local function getWheelSelection()
 
 	local angle = R_PointToAngle2(center_x*FU, center_y*FU, CURSOR_X*FU, CURSOR_Y*FU)
 	local split = 360*FU/NUM_EMOTES
-	local rel = AngleFixed(InvAngle(angle - ANGLE_90)) -- ANGLE_90 - angle, wrapped positive
+	local rel = AngleFixed(InvAngle(angle + ANGLE_90)) -- ANGLE_90 - angle, wrapped positive
 
 	rel = ($ + split/2) % (360*FU)
 
@@ -67,12 +67,12 @@ addHook("KeyDown", function(keyevent)
 		return true
 	end
 
-	if MENU_ACTIVE and (keyevent.name == EMOTE_KEY or keyevent.name == EMOTE_LEAVE_KEY) then
+	if MENU_ACTIVE and keyevent.name == EMOTE_LEAVE_KEY then
 		MENU_ACTIVE = false
 		return true
 	end
 
-	if MENU_ACTIVE and keyevent.name == EMOTE_CONFIRM_KEY then
+	if MENU_ACTIVE and (keyevent.name == EMOTE_CONFIRM_KEY or keyevent.name == EMOTE_KEY) then
 		COM_BufInsertText(consoleplayer, "poyo_emote "..CURRENT_SELECTION)
 		MENU_ACTIVE = false
 		return true
@@ -99,8 +99,8 @@ addHook("ThinkFrame", function()
 		return
 	end
 
-	CURSOR_X = clamp($ + mouse.dx / 4, 0, SCREEN_WIDTH)
-	CURSOR_Y = clamp($ + mouse.dy / 4, 0, SCREEN_HEIGHT)
+	CURSOR_X = clamp($ + mouse.rdx, 0, SCREEN_WIDTH)
+	CURSOR_Y = clamp($ + mouse.rdy, 0, SCREEN_HEIGHT)
 
 	CURRENT_SELECTION = getWheelSelection()
 end)
@@ -116,12 +116,12 @@ addHook("PlayerCmd", function(player, cmd)
 end)
 
 addHook("HUD", function(v, player, camera)
-	if not MENU_ACTIVE then return end
-
 	SCREEN_WIDTH = v.width()
 	SCREEN_HEIGHT = v.height()
 	SCREEN_SCALE_X = v.dupx()
 	SCREEN_SCALE_Y = v.dupy()
+
+	if not MENU_ACTIVE then return end
 
 	local flags = V_SNAPTOLEFT|V_SNAPTOTOP
 	local cursor = v.cachePatch("POYO_CURSOR")
@@ -133,7 +133,7 @@ addHook("HUD", function(v, player, camera)
 	local split = 360*FU/#PoyoPennynickel.Class.emotes
 
 	for i, emote in ipairs(PoyoPennynickel.Class.emotes) do
-		local angle = ANGLE_90
+		local angle = -ANGLE_90
 		local thrust = 45*FU
 		local flags = 0
 

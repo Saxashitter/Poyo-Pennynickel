@@ -11,6 +11,8 @@ addHook("HUD", function(v, player, camera)
 	local portraitY = 200 * FU - boxHeight
 
 	for name, portrait in pairs(currentSet.characters) do
+		local offsetY = 0
+
 		local character = PoyoPennynickel.Dialogue.Characters[name]
 		local expression = character.expressions.default
 		local patch, flip = v.getSprite2Patch(character.skin, expression.sprite, false, A, portrait.rotation, 0)
@@ -18,7 +20,8 @@ addHook("HUD", function(v, player, camera)
 		local color = nil
 
 		if currentLine.character ~= name then
-			color = v.getColormap(TC_BLINK, SKINCOLOR_GREY)
+			color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)
+			offsetY = $ + 10 * FU
 		elseif character.setColorBasedOnPlayer and displayplayer and displayplayer.valid then
 			color = v.getColormap(character.skin, displayplayer.skincolor)
 		else
@@ -42,7 +45,7 @@ addHook("HUD", function(v, player, camera)
 
 		v.drawScaled(
 			portrait.position*FU + character.x_offset*FU,
-			200 * FU - portraitHeight*FU - character.y_offset*character.scale,
+			200 * FU - portraitHeight*FU - character.y_offset*character.scale + offsetY,
 			character.scale,
 			patch, 
 			flags,

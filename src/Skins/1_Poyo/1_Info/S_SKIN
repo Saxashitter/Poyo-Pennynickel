@@ -15,4 +15,4 @@ acceleration = 36
 contspeed = 17
 contangle = 3
 height = 68
-DSJUMP = DSPY_JMP
+DSJUMP = DSS229
