@@ -135,6 +135,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		P_Thrust(player.mo, control_direction, direction_speed)
 		player.pflags = $|PF_JUMPDOWN
 		class.grappleTimes = 0
+		S_StartSound(mo, sfx_s3k4c)
 
 		return true
 	end
@@ -214,6 +215,10 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 	if mo.state == S_PLAY_POYO_SKATEBOARD_CLING
 	and class.clingTime
 	and canClimbLine(mo, line, side) then
+		if not S_SoundPlaying(mo, sfx_s3k55) then
+			S_StartSoundAtVolume(mo, sfx_s3k55, 50)
+		end
+
 		local pointx, pointy = P_ClosestPointOnLine(mo.x, mo.y, line)
 
 		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y)
@@ -316,6 +321,8 @@ PoyoPennynickel:addScript("PlayerBlocked", function(player, mobj, line)
 			mo.state = S_PLAY_POYO_SKATEBOARD_CLING
 			P_SetObjectMomZ(mo, 5 * FU, true)
 			player.pflags = $ & ~PF_STARTJUMP
+
+			S_StartSound(mo, sfx_s3k4a)
 		end
 
 		player.powers[pw_pushing] = 5

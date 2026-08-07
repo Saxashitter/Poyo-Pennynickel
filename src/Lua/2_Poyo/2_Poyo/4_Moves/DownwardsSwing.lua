@@ -45,9 +45,15 @@ local function animationAction(mo)
 
 		mo.momx = $/2
 		mo.momy = $/2
+
+		S_StartSoundAtVolume(mo, sfx_s3k8e, 100)
+-- 		S_StartSoundAtVolume(mo, sfx_s3k9c, 80)
 	end
 
 	if frame == FRAME_START then
+		S_StopSoundByID(mo, sfx_s3k8e)
+		S_StartSound(mo, sfx_s3k9a)
+		S_StartSoundAtVolume(mo, sfx_s3k49, 100)
 		mo.poyoChar.downwardsSwingMove = THRUST_TIME
 		P_Thrust(mo, mo.poyoChar.downwardsSwingAngle, FixedMul(SEMI_THRUST_SPEED, mo.scale))
 	end
@@ -96,7 +102,11 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
-	if mo.state ~= S_PLAY_POYO_DOWNWARDS_SWING then return end
+	if mo.state ~= S_PLAY_POYO_DOWNWARDS_SWING then
+		S_StopSoundByID(mo, sfx_s3k8e)
+		return
+	end
+
 	local angle = class.downwardsSwingAngle
 	player.drawangle = angle
 

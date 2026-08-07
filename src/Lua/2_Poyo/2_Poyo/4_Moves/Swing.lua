@@ -64,6 +64,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 		mo.state = S_PLAY_STND
 	elseif class:canDashAggressiveAttack() then return end
 
+	S_StartSound(mo, sfx_s222)
 	mo.state = S_PLAY_POYO_SWING
 end)
 

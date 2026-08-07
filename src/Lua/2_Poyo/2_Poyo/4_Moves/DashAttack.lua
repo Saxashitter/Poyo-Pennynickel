@@ -75,6 +75,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	if mo.state == S_PLAY_POYO_DASH_ATTACK then return end
 	if mo.state == S_PLAY_POYO_SWING then return end
 
+	class.airTransitionedDashAttack = false
 	mo.state = S_PLAY_POYO_DASH_ATTACK
 	local momx, momy = class:getDashAttackSpeedXY()
 	local mo_speed = R_PointToDist2(0, 0, mo.momx, mo.momy)
@@ -84,6 +85,9 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	mo.momx = FixedMul($, div)
 	mo.momy = FixedMul($, div)
 	P_Thrust(mo, mo.angle, 8 * mo.scale)
+
+	S_StartSound(mo, sfx_s238)
+-- 	S_StartSound(mo, sfx_s244)
 end)
 
 PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
@@ -91,6 +95,11 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 	local class = mo.poyoChar
 
 	if mo.state == S_PLAY_POYO_DASH_ATTACK then
+		if not S_SoundPlaying(mo, sfx_s3k7d) then
+			S_StartSoundAtVolume(mo, sfx_s3k7d, 100)
+		end
+
+
 		local t = FU - FixedDiv(mo.tics, ANIMATION_LENGTH)
 		local fixed_angle = AngleFixed(class.dashAttackDrawangle)
 		local angle = FixedAngle(ease.outexpo(t, fixed_angle, fixed_angle + (360 * FU) * 2))
@@ -137,6 +146,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 -- 			P_SetObjectMomZ(mo, FixedDiv(momz, mo.scale))
 -- 		end
 	else
+		S_StopSoundByID(mo, sfx_s3k7d)
 		class.airTransitionedDashAttack = false
 	end
 end)
@@ -176,6 +186,9 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 
 		player.drawangle = player.mo.angle
 		P_DoJump(player, true)
+		S_StopSoundByID(mo, sfx_s3k7d)
+		S_StopSoundByID(mo, sfx_s238)
+		S_StartSound(mo, sfx_s3k7e)
 		mo.state = S_PLAY_POYO_DASH_ATTACK
 		mo.tics = JUMP_TICS
 		class.airTransitionedDashAttack = true
