@@ -1,7 +1,7 @@
 local EMOTE_KEY = "b"
 local EMOTE_CONFIRM_KEY = "mouse1"
 local EMOTE_LEAVE_KEY = "escape"
-local MENU_ACTIVE = true
+local MENU_ACTIVE = false
 local CURSOR_X = 0
 local CURSOR_Y = 0
 
