@@ -1,1 +1,4 @@
 ignored/*
+assets/maps/*.dbs
+assets/maps/*.backup*
+assets/maps/*.autosave*
