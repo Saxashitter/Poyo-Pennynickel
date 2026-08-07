@@ -292,9 +292,8 @@ local function manageGrapple(player)
 		S_StopSoundByID(mo, start_hook)
 
 		if mobj.hitline and (mobj.hitline.flags & ML_NOCLIMB or P_CheckSkyHit(mobj, mobj.hitline)) then
-			mo.momz = $/3
-			player.pflags = $ & ~PF_STARTJUMP
-			mo.state = S_PLAY_FALL
+-- 			player.drawangle = R_PointToAngle2(mo.x, mo.y, mobj.x, mobj.y)
+			P_DoPlayerPain(player, mobj, mobj)
 			return
 		end
 
