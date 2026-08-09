@@ -31,6 +31,20 @@ states[S_PLAY_POYO_CARAMELLDANSEN] = {
 		if frame == B or frame == E then
 			mo.tics = 2
 		end
+
+		local sides = {}
+		sides[1] = P_SpawnGhostMobj(mo)
+		sides[2] = P_SpawnGhostMobj(mo)
+		for k, v in ipairs(sides) do
+			v.dispoffset = -1
+			v.colorized = true
+			v.color = SKINCOLOR_RED
+			v.frame = $|FF_ADD
+		end
+
+		local speed = 8 * mo.scale
+		P_InstaThrust(sides[1], mo.player.cmd.angleturn*FU + ANGLE_90, speed)
+		P_InstaThrust(sides[2], mo.player.cmd.angleturn*FU - ANGLE_90, speed)
 	end,
 	nextstate = S_PLAY_POYO_CARAMELLDANSEN
 }
@@ -64,14 +78,16 @@ emote.update = function(player, active)
 	local time = class.caramelldansenTicker * FRACUNIT / TICRATE
 	local bpm = emote.bpm -- * FRACUNIT / MUSICRATE
 
-	if S_MusicName() ~= "PY_CDN" then
-		S_ChangeMusic("PY_CDN", true)
+	if player == consoleplayer then
+		if S_MusicName() ~= "PY_CDN" then
+			S_ChangeMusic("PY_CDN", true)
 
-		if S_GetMusicLength() ~= 0 then
+			if S_GetMusicLength() ~= 0 then
+				S_SetMusicPosition(mr_time % S_GetMusicLength())
+			end
+		elseif S_GetMusicLength() ~= 0 and abs(S_GetMusicPosition() - (mr_time % S_GetMusicLength())) >= 500 then
 			S_SetMusicPosition(mr_time % S_GetMusicLength())
 		end
-	elseif S_GetMusicLength() ~= 0 and abs(S_GetMusicPosition() - (mr_time % S_GetMusicLength())) >= 500 then
-		S_SetMusicPosition(mr_time % S_GetMusicLength())
 	end
 
 	local beat = FixedMul(time, (bpm / 60) * FU / MUSICRATE) -- (songPosition / 1000) * (self.bpm / 60)
@@ -79,6 +95,7 @@ emote.update = function(player, active)
 
 	if int_beat ~= class.caramelldansenLastBeat then
 		local frame = mo.frame & FF_FRAMEMASK
+		mo.state = S_PLAY_POYO_CARAMELLDANSEN
 		mo.frame = $ & ~FF_FRAMEMASK
 
 		if frame <= C then
