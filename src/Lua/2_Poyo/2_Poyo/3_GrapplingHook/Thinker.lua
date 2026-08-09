@@ -340,6 +340,7 @@ end
 
 PoyoPennynickel:addScript("PlayerJump", function(player)
 	if MM and MM:isMM() then return end
+	if ZE2 and gametype == GT_ZE2 then return end
 	if P_IsObjectOnGround(player.mo) then return end
 	if player.pflags & PF_JUMPDOWN then return end
 	if P_PlayerInPain(player) then return end
