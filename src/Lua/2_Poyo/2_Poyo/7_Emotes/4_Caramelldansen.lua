@@ -59,8 +59,7 @@ emote.use = function(player, variant)
 	class.caramelldansenLastBeat = 0
 	mo.state = S_PLAY_POYO_CARAMELLDANSEN
 
-	print(variant)
-	S_ChangeMusic(emote.variants[variant].song, true)
+	S_ChangeMusic(emote.variants[variant].song, true, player)
 
 -- 	S_StartSound(mo, sfx_py_omg)
 end
@@ -77,14 +76,16 @@ emote.update = function(player, active)
 	local time = class.caramelldansenTicker * FRACUNIT / TICRATE
 	local bpm = emote.variants[class.emoteVariant].bpm -- * FRACUNIT / MUSICRATE
 
-	if S_MusicName() ~= emote.variants[class.emoteVariant].song then
-		S_ChangeMusic(emote.variants[class.emoteVariant].song, true)
+	if player == consoleplayer then
+		if S_MusicName() ~= emote.variants[class.emoteVariant].song then
+			S_ChangeMusic(emote.variants[class.emoteVariant].song, true)
 
-		if S_GetMusicLength() ~= 0 then
+			if S_GetMusicLength() ~= 0 then
+				S_SetMusicPosition(mr_time % S_GetMusicLength())
+			end
+		elseif S_GetMusicLength() ~= 0 and abs(S_GetMusicPosition() - (mr_time % S_GetMusicLength())) >= 500 then
 			S_SetMusicPosition(mr_time % S_GetMusicLength())
 		end
-	elseif S_GetMusicLength() ~= 0 and abs(S_GetMusicPosition() - (mr_time % S_GetMusicLength())) >= 500 then
-		S_SetMusicPosition(mr_time % S_GetMusicLength())
 	end
 
 	local beat = FixedMul(time, (bpm / 60) * FU / MUSICRATE) -- (songPosition / 1000) * (self.bpm / 60)
