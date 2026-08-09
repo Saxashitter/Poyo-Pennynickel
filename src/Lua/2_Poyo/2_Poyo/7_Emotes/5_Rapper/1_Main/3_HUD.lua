@@ -2,6 +2,7 @@ addHook("HUD", function(v, player)
 	local result, match, side = PoyoPennynickel.FNF:PlayerIsInRapBattle(player)
 	if not result then return end
 
+	local song = PoyoPennynickel.FNF.Songs[match.song]
 	local chart = match.notes[side]
 	if player == consoleplayer then
 		chart = PoyoPennynickel.FNF.Chart
@@ -19,7 +20,13 @@ addHook("HUD", function(v, player)
 		for i = 1, #lane do
 			local note = lane[i]
 
-			v.draw(x, 16 + note.timing - match.tics, patch, V_SNAPTOTOP|V_SNAPTORIGHT, v.getColormap(TC_BLINK, SKINCOLOR_RED))
+			v.drawScaled(x*FU,
+				16*FU + FixedMul(note.timing*FU - match.tics*FU, song.speed),
+				FU,
+				patch,
+				V_SNAPTOTOP|V_SNAPTORIGHT,
+				v.getColormap(TC_BLINK, SKINCOLOR_RED)
+			)
 		end
 	end
 end)

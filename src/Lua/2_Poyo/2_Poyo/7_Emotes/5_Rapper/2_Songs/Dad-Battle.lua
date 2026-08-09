@@ -3,6 +3,7 @@ PoyoPennynickel.FNF.Songs[#PoyoPennynickel.FNF.Songs+1] = {
 	song = "PYFNDB",
 	length = 3010,
 	bpm = 180,
+	speed = FU * 2,
 	notes = {
 		{
 			{
