@@ -1,6 +1,22 @@
 PoyoPennynickel.FNF.RapBattles = {}
 PoyoPennynickel.FNF.Songs = {}
 PoyoPennynickel.FNF.Chart = nil -- CLIENT-SIDE
+PoyoPennynickel.FNF.KeyBinds = {
+	left = {"a", "left arrow"},
+	down = {"s", "down arrow"},
+	up = {"w", "k", "up arrow"},
+	right = {"d", "l", "right arrow"}
+}
+
+local function get_input(keyevent)
+	for name, binds in pairs(PoyoPennynickel.FNF.KeyBinds)
+		for _, bind in ipairs(binds) do
+			if keyevent.name == bind then
+				return name
+			end
+		end
+	end
+end
 
 local function validity_check(player)
 	return player and player.valid and player.mo and player.mo.valid and player.mo.health and PoyoPennynickel.FNF.active(player)
@@ -54,7 +70,7 @@ function PoyoPennynickel.FNF:StartRapBattle(player1, player2, song)
 	for side, group in ipairs(song.notes) do
 		if match.players[side] == consoleplayer then
 			initalize_client_side = side
--- 			self.Chart = clone_chart(group)
+			self.Chart = clone_chart(group)
 		end
 
 		match.notes[side] = clone_chart(group)
@@ -106,6 +122,44 @@ function PoyoPennynickel.FNF:ResetClientRapBattle()
 	S_ChangeMusic(mapmusname, true)
 	print("reset")
 end
+
+-- TODO: maybe make this its own lua
+addHook("KeyDown", function(keyevent)
+	if isdedicatedserver then return end
+	if keyevent.repeated then return end
+	if gamestate ~= GS_LEVEL then return end
+	if chatactive then return end
+
+	local result, match = PoyoPennynickel.FNF:PlayerIsInRapBattle(consoleplayer)
+	if not result then return end
+
+	local bind = get_input(keyevent)
+	local i
+
+	if bind == "left" then i = 1 end
+	if bind == "down" then i = 2 end
+	if bind == "up" then i = 3 end
+	if bind == "right" then i = 4 end
+
+	if i == nil then
+		return
+	end
+
+	local self = PoyoPennynickel.FNF
+	local note = self.Chart[i][1]
+
+	if not note then
+		return true
+	end
+
+	local timing = note.timing - match.tics
+
+	if timing <= 12 then
+		table.remove(self.Chart[i], 1)
+	end
+
+	return true
+end)
 
 addHook("MapChange", function()
 	PoyoPennynickel.FNF.Chart = nil

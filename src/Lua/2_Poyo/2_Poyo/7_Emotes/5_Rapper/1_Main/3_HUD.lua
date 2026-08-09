@@ -3,9 +3,9 @@ addHook("HUD", function(v, player)
 	if not result then return end
 
 	local chart = match.notes[side]
--- 	if player == consoleplayer then
--- 		chart = PoyoPennynickel.FNF.Chart
--- 	end
+	if player == consoleplayer then
+		chart = PoyoPennynickel.FNF.Chart
+	end
 
 	local x = 140
 	local patch = v.cachePatch("EMBLICON")
