@@ -1,7 +1,7 @@
 local EMOTE_KEY = "b"
 local EMOTE_CONFIRM_KEY = "mouse1"
 local EMOTE_LEAVE_KEY = "escape"
-local MENU_ACTIVE = false
+
 local CURSOR_X = 0
 local CURSOR_Y = 0
 
@@ -15,6 +15,8 @@ local CURRENT_SELECTION = 1
 
 local CMD_ANGLE = 0
 local CMD_AIMING = 0
+
+PoyoPennynickel.EmoteWheel = false
 
 local function clamp(val, a, b)
 	return max(a, min(val, b))
@@ -42,8 +44,8 @@ addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
 	if keyevent.repeated then return end
 	if gamestate ~= GS_LEVEL then return end
-	-- this is what ChatGPT told me to do
 	if chatactive then return end
+	if PoyoPennynickel.Menu.Active then return end
 
 	if not consoleplayer then return end
 	if not consoleplayer.valid then return end
@@ -53,9 +55,9 @@ addHook("KeyDown", function(keyevent)
 	if not player.mo then return end
 	if not player.mo.valid then return end
 	if not player.mo.poyoChar then return end
-	if not player.mo.poyoChar:canEmote() then return end
+-- 	if not player.mo.poyoChar:canEmote() then return end
 
-	if not MENU_ACTIVE and keyevent.name == EMOTE_KEY then
+	if not PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_KEY then
 		if player.mo.poyoChar.emoting then
 			COM_BufInsertText(consoleplayer, "poyo_stopemote")
 			return true
@@ -63,29 +65,29 @@ addHook("KeyDown", function(keyevent)
 
 		CURSOR_X = SCREEN_WIDTH / 2
 		CURSOR_Y = SCREEN_HEIGHT / 2
-		MENU_ACTIVE = true
+		PoyoPennynickel.EmoteWheel = true
 		return true
 	end
 
-	if MENU_ACTIVE and keyevent.name == EMOTE_LEAVE_KEY then
-		MENU_ACTIVE = false
+	if PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_LEAVE_KEY then
+		PoyoPennynickel.EmoteWheel = false
 		return true
 	end
 
-	if MENU_ACTIVE and (keyevent.name == EMOTE_CONFIRM_KEY or keyevent.name == EMOTE_KEY) then
+	if PoyoPennynickel.EmoteWheel and (keyevent.name == EMOTE_CONFIRM_KEY or keyevent.name == EMOTE_KEY) then
 		COM_BufInsertText(consoleplayer, "poyo_emote "..CURRENT_SELECTION)
-		MENU_ACTIVE = false
+		PoyoPennynickel.EmoteWheel = false
 		return true
 		-- also enable cooldown
 	end
 
-	if MENU_ACTIVE then
+	if PoyoPennynickel.EmoteWheel then
 		return true
 	end
 end)
 
 addHook("ThinkFrame", function()
-	if not MENU_ACTIVE then return end
+	if not PoyoPennynickel.EmoteWheel then return end
 
 	if not (
 		consoleplayer
@@ -93,9 +95,9 @@ addHook("ThinkFrame", function()
 		and consoleplayer.mo
 		and consoleplayer.mo.valid
 		and consoleplayer.mo.poyoChar
-		and consoleplayer.mo.poyoChar:canEmote()
+-- 		and consoleplayer.mo.poyoChar:canEmote()
 	) then
-		MENU_ACTIVE = false
+		PoyoPennynickel.EmoteWheel = false
 		return
 	end
 
@@ -106,7 +108,7 @@ addHook("ThinkFrame", function()
 end)
 
 addHook("PlayerCmd", function(player, cmd)
-	if not MENU_ACTIVE then
+	if not PoyoPennynickel.EmoteWheel then
 		CMD_ANGLE = cmd.angleturn
 		CMD_AIMING = cmd.aiming
 	else
@@ -121,7 +123,7 @@ addHook("HUD", function(v, player, camera)
 	SCREEN_SCALE_X = v.dupx()
 	SCREEN_SCALE_Y = v.dupy()
 
-	if not MENU_ACTIVE then return end
+	if not PoyoPennynickel.EmoteWheel then return end
 
 	local flags = V_SNAPTOLEFT|V_SNAPTOTOP
 	local cursor = v.cachePatch("POYO_CURSOR")

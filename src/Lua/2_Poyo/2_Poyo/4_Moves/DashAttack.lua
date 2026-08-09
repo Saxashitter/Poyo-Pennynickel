@@ -21,7 +21,7 @@ local S_PLAY_POYO_DASH_ATTACK = freeslot("S_PLAY_POYO_DASH_ATTACK")
 local ANIMATION_LENGTH = 20 -- the animation length
 local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_SPRING|STR_ANIM|STR_SPIKE -- the animation's pw_powers flags
 local ANIMATION_PANIM = PA_ABILITY -- the panim of the animation
-local SPEED_START = 55 * FU -- the speed that poyo gets when the move starts
+local SPEED_START = 40 * FU -- the speed that poyo gets when the move starts
 local JUMP_TICS = 15 -- how long air-transitioned last for
 
 Class.airTransitionedDashAttack = false -- if we transitioned it to air

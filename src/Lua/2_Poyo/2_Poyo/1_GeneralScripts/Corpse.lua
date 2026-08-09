@@ -41,6 +41,7 @@ PoyoPennynickel:addScript("PlayerDied", function(player)
 	corpse.fuse = -1
 	corpse.tics = -1
 	corpse.angle = player.drawangle
+	corpse.translation = mo.translation
 	if multiplayer then
 		corpse.fuse = (60 * TICRATE) * 5
 	end
