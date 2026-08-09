@@ -29,6 +29,7 @@ Poyo Pennynickel is a character mod for SRB2 that aims to be difficult to play, 
 	- Poyo Pennynickel
 - No Epix
 	- Removes all Epix related assets
+	- Comes in Half, and Lite variants
 
 ## Building
 I don't have an automatic way to do this as of right now. I plan to make a GitHub action for this in the near future, but for the mean time, clone the repo, open SLADE and make the builds yourself.
