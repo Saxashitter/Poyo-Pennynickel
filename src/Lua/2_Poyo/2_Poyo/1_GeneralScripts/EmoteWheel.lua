@@ -1,6 +1,7 @@
 local EMOTE_KEY = "b"
 local EMOTE_CONFIRM_KEY = "mouse1"
 local EMOTE_LEAVE_KEY = "escape"
+local EMOTE_ALT_KEY = "mouse2"
 
 local CURSOR_X = 0
 local CURSOR_Y = 0
@@ -11,6 +12,9 @@ local SCREEN_SCALE_X = 1
 local SCREEN_SCALE_Y = 1
 
 local DEADZONE = 8 -- pixels from center where selection doesn't change
+
+local ALTERNATE_EMOTE = 0
+local ALTERNATE_EMOTE_SELECTION = 0
 local CURRENT_SELECTION = 1
 
 local CMD_ANGLE = 0
@@ -24,10 +28,19 @@ end
 
 local function getWheelSelection()
 	local NUM_EMOTES = #PoyoPennynickel.Class.emotes
+
+	if ALTERNATE_EMOTE then
+		NUM_EMOTES = #PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants + 1
+	end
+
 	local center_x, center_y = SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2
 	local dist = R_PointToDist2(center_x*FU, center_y*FU, CURSOR_X*FU, CURSOR_Y*FU)
 
 	if dist < DEADZONE * FRACUNIT then
+		if ALTERNATE_EMOTE then
+			return ALTERNATE_EMOTE_SELECTION
+		end
+
 		return CURRENT_SELECTION
 	end
 
@@ -55,7 +68,7 @@ addHook("KeyDown", function(keyevent)
 	if not player.mo then return end
 	if not player.mo.valid then return end
 	if not player.mo.poyoChar then return end
--- 	if not player.mo.poyoChar:canEmote() then return end
+	if not player.mo.poyoChar:canEmote() then return end
 
 	if not PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_KEY then
 		if player.mo.poyoChar.emoting then
@@ -65,17 +78,41 @@ addHook("KeyDown", function(keyevent)
 
 		CURSOR_X = SCREEN_WIDTH / 2
 		CURSOR_Y = SCREEN_HEIGHT / 2
+		ALTERNATE_EMOTE = 0
+		ALTERNATE_EMOTE_SELECTION = 0
 		PoyoPennynickel.EmoteWheel = true
 		return true
 	end
 
 	if PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_LEAVE_KEY then
-		PoyoPennynickel.EmoteWheel = false
+		if ALTERNATE_EMOTE then
+			ALTERNATE_EMOTE = 0
+			ALTERNATE_EMOTE_SELECTION = 0
+		else
+			PoyoPennynickel.EmoteWheel = false
+		end
+		return true
+	end
+
+	if PoyoPennynickel.EmoteWheel
+	and keyevent.name == EMOTE_ALT_KEY
+	and ALTERNATE_EMOTE then
+		ALTERNATE_EMOTE_SELECTION = 0
+		ALTERNATE_EMOTE = 0
+		return true
+	end
+
+	if PoyoPennynickel.EmoteWheel
+	and keyevent.name == EMOTE_ALT_KEY
+	and not ALTERNATE_EMOTE
+	and PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants
+	and #PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants >= 1 then
+		ALTERNATE_EMOTE = CURRENT_SELECTION
 		return true
 	end
 
 	if PoyoPennynickel.EmoteWheel and (keyevent.name == EMOTE_CONFIRM_KEY or keyevent.name == EMOTE_KEY) then
-		COM_BufInsertText(consoleplayer, "poyo_emote "..CURRENT_SELECTION)
+		COM_BufInsertText(consoleplayer, "poyo_emote "..CURRENT_SELECTION.." "..ALTERNATE_EMOTE_SELECTION)
 		PoyoPennynickel.EmoteWheel = false
 		return true
 		-- also enable cooldown
@@ -95,7 +132,7 @@ addHook("ThinkFrame", function()
 		and consoleplayer.mo
 		and consoleplayer.mo.valid
 		and consoleplayer.mo.poyoChar
--- 		and consoleplayer.mo.poyoChar:canEmote()
+		and consoleplayer.mo.poyoChar:canEmote()
 	) then
 		PoyoPennynickel.EmoteWheel = false
 		return
@@ -104,7 +141,11 @@ addHook("ThinkFrame", function()
 	CURSOR_X = clamp($ + mouse.rdx, 0, SCREEN_WIDTH)
 	CURSOR_Y = clamp($ + mouse.rdy, 0, SCREEN_HEIGHT)
 
-	CURRENT_SELECTION = getWheelSelection()
+	if not ALTERNATE_EMOTE then
+		CURRENT_SELECTION = getWheelSelection()
+	else
+		ALTERNATE_EMOTE_SELECTION = getWheelSelection() - 1
+	end
 end)
 
 addHook("PlayerCmd", function(player, cmd)
@@ -132,14 +173,28 @@ addHook("HUD", function(v, player, camera)
 	v.drawScaled(160*FU, 100*FU, FU/2, wheel, V_40TRANS)
 	v.draw(CURSOR_X, CURSOR_Y, cursor, flags|V_NOSCALEPATCH|V_NOSCALESTART)
 
-	local split = 360*FU/#PoyoPennynickel.Class.emotes
+	local selection = CURRENT_SELECTION
+	local tbl = PoyoPennynickel.Class.emotes
 
-	for i, emote in ipairs(PoyoPennynickel.Class.emotes) do
+	if ALTERNATE_EMOTE then
+		selection = ALTERNATE_EMOTE_SELECTION+1
+
+		-- cheap...
+		tbl = {}
+		local newtbl = PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants
+		for i = 0, #newtbl do
+			tbl[i+1] = newtbl[i]
+		end
+	end
+
+	local split = 360*FU/#tbl
+
+	for i, emote in ipairs(tbl) do
 		local angle = -ANGLE_90
 		local thrust = 45*FU
 		local flags = 0
 
-		if i == CURRENT_SELECTION then
+		if i == selection then
 			flags = V_YELLOWMAP
 		end
 

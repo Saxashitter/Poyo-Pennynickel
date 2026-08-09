@@ -52,13 +52,10 @@ function PoyoPennynickel.Menu:OpenMenu(entry)
 	self.Active = true
 	self.Current = self
 	self.Selection = 1
-
-	S_ChangeMusic("PY_MNU", true)
 end
 
 function PoyoPennynickel.Menu:CloseMenu()
 	self.Active = false
-	S_ChangeMusic(mapmusname, true)
 end
 
 function PoyoPennynickel.Menu:StepSelection(i)
@@ -77,7 +74,6 @@ function PoyoPennynickel.Menu:StepSelection(i)
 		return
 	end
 
-	S_StartSound(nil, sfx_menu1)
 	self.Current.Callbacks.SelectionChanged()
 end
 
@@ -90,7 +86,6 @@ function PoyoPennynickel.Menu:SelectSelection()
 		self.Selection = 1
 		self.Current = selection
 		self.Current.Callbacks.Enter()
-		S_StartSound(nil, sfx_menu1)
 	end
 end
 
@@ -109,7 +104,6 @@ function PoyoPennynickel.Menu:StepSelectionValue(step)
 	end
 
 	selection.Callbacks.SelectionOption()
-	S_StartSound(nil, sfx_menu1)
 end
 
 function PoyoPennynickel.Menu:StepBack()
@@ -120,7 +114,6 @@ function PoyoPennynickel.Menu:StepBack()
 
 	self.Current = self.Current.Parent
 	self.Selection = 1
-	S_StartSound(nil, sfx_menu1)
 end
 
 COM_AddCommand("poyo_menu", function()

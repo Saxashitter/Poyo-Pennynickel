@@ -3,6 +3,7 @@ local Class = PoyoPennynickel.Class
 
 Class.emotes = {}
 Class.emoting = 0
+Class.emoteVariant = 0
 
 function PoyoPennynickel.EmoteAction(mo)
 	if not mo then return end
@@ -24,21 +25,26 @@ function Class:canEmote()
 	return true
 end
 
-function Class:emote(i)
+function Class:emote(index, variant)
 	local mo = self.mo
 	local player = mo.player
 
 	if not self:canEmote() then return false end
-	if not self.emotes[i] then return false end
+	if not self.emotes[index] then return false end
 
-	local emote = self.emotes[i]
+	local emote = self.emotes[index]
+
+	if not emote.variants or not emote.variants[variant] then
+		variant = 0
+	end
 
 	if self.emoting then
 		self:stopEmote()
 	end
 
-	emote.use(player)
-	self.emoting = i
+	self.emoteVariant = variant
+	emote.use(player, variant)
+	self.emoting = index
 
 	return true
 end
@@ -58,7 +64,7 @@ function Class:stopEmote()
 	return true
 end
 
-COM_AddCommand("poyo_emote", function(player, i)
+COM_AddCommand("poyo_emote", function(player, i, k)
 	if not player.mo then return end
 	if not player.mo.valid then return end
 	if not player.mo.health then return end
@@ -69,7 +75,11 @@ COM_AddCommand("poyo_emote", function(player, i)
 	i = tonumber($)
 	if i == nil then i = 1 end
 
-	local result = player.mo.poyoChar:emote(i)
+	if k == nil then k = "0" end
+	k = tonumber($)
+	if k == nil then k = 0 end
+
+	local result = player.mo.poyoChar:emote(i, k)
 end)
 
 COM_AddCommand("poyo_stopemote", function(player)
@@ -103,6 +113,7 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 		if not new_emoting then
 			class.emotes[class.emoting].finish(player)
 			class.emoting = 0
+			class.emoteVariant = 0
 		end
 	end
 

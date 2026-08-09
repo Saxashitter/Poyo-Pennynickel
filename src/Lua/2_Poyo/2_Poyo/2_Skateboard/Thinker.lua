@@ -134,7 +134,6 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		P_Thrust(mo, player.drawangle, wall_speed)
 		P_Thrust(player.mo, control_direction, direction_speed)
 		player.pflags = $|PF_JUMPDOWN
-		class.grappleTimes = 0
 		S_StartSound(mo, sfx_s3k4c)
 
 		return true
