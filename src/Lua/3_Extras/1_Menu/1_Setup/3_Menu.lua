@@ -139,7 +139,7 @@ end, COM_LOCAL)
 addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
 	if keyevent.repeated then
-		if keyevent.name == "f1" then return true end
+		if keyevent.name == "f1" then return true end -- foolproof...
 		return
 	end
 	if gamestate ~= GS_LEVEL then return end

@@ -44,7 +44,8 @@ local function menu(v)
 		poyomap = v.getColormap(player.skin, player.skincolor)
 
 		if player.poyo_secondcolor then
-			translatemap = v.getColormap(player.skin, player.skincolor, PoyoPennynickel.SecondColors[player.poyo_secondcolor].color)
+			visor = v.cachePatch("POYO_BINGCHILLING_3")
+			translatemap = v.getColormap(nil, player.poyo_secondcolor)
 		end
 	end
 
@@ -68,11 +69,14 @@ local function menu(v)
 			color = V_YELLOWMAP
 		end
 
-		if entry.Options then
+		if entry.Options or entry.Value then
 			local sep = 60
-			local option = entry.Options[entry.CurrentOption].value
+			local option = entry.Value
 
-			option = string.char(28).." "..$.." "..string.char(29)
+			if entry.Options then
+				option = entry.Options[entry.CurrentOption].value
+				option = string.char(28).." "..$.." "..string.char(29)
+			end
 
 			v.drawString(160 - sep, y + stringHeight * (i-1), entry.Name, V_ALLOWLOWERCASE|(trans * V_10TRANS)|color, "thin-right")
 			v.drawString(160 + sep, y + stringHeight * (i-1), option, V_ALLOWLOWERCASE|(trans * V_10TRANS)|color, "thin")
@@ -113,7 +117,7 @@ local function anyKey(v)
 	v.drawStretched(0, 0, scaleX, scaleY, background, V_SNAPTOLEFT|V_SNAPTOTOP|(4 * V_10TRANS))
 
 	-- we will be unhardcoding this later down the line
-	local str = {"Hit the new key for", "Emote", "Press Backspace to cancel"}
+	local str = {"Hit the new key for this button", "Press Backspace to cancel"}
 	local width = 0
 	local height = 10 * #str
 

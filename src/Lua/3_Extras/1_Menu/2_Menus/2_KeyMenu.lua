@@ -10,7 +10,8 @@ for _, key in ipairs(keys) do
 	local EmoteKeyOption = {
 		Name = key.Name,
 		Desc = "",
-		Callbacks = {}
+		Callbacks = {},
+		Value = PoyoPennynickel[key.Variable]
 	}
 
 	local function keyRebind(variable)
@@ -19,6 +20,7 @@ for _, key in ipairs(keys) do
 				if keyevent.name == "backspace" then return end
 				PoyoPennynickel[variable] = keyevent.name
 				S_StartSound(nil, sfx_s3k63)
+				EmoteKeyOption.Value = keyevent.name
 			end
 		end
 	end
