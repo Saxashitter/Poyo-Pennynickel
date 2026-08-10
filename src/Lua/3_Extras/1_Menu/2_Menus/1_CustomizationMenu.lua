@@ -26,6 +26,14 @@ refreshColorEntries()
 ColorOption.Callbacks.SelectionOption = function()
 	COM_BufInsertText(consoleplayer, "poyo_secondcolor "..ColorOption.Options[ColorOption.CurrentOption].color)
 end
+ColorOption.DrawOption = function(v, x, y)
+	local width = v.stringWidth(ColorOption.Options[ColorOption.CurrentOption].value, V_ALLOWLOWERCASE, "thin")
+
+	if ColorOption.CurrentOption == 1 then return end
+	local color = skincolors[ColorOption.Options[ColorOption.CurrentOption].color]
+
+	v.drawFill(x + 8, y + 8, width, 1, color.ramp[6])
+end
 CustomizationMenu.Callbacks.Enter = function()
 	refreshColorEntries()
 end

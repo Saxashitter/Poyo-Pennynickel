@@ -58,8 +58,9 @@ local function menu(v)
 	if trans == 10 then return end
 
 	local entries = PoyoPennynickel.Menu.Current.Entries
-	local stringHeight = 8
-	local y = 100 - (stringHeight * #entries / 2)
+	local stringHeight = 12
+	local trueStringHeight = 8
+	local y = 100 - (stringHeight * max(0, #entries - 2) / 2) - (trueStringHeight * min(#entries, 2) / 2)
 	for i, entry in ipairs(entries) do
 		if entry == true then continue end
 
@@ -80,6 +81,11 @@ local function menu(v)
 
 			v.drawString(160 - sep, y + stringHeight * (i-1), entry.Name, V_ALLOWLOWERCASE|(trans * V_10TRANS)|color, "thin-right")
 			v.drawString(160 + sep, y + stringHeight * (i-1), option, V_ALLOWLOWERCASE|(trans * V_10TRANS)|color, "thin")
+
+			-- need this specifically for coloring
+			if entry.DrawOption then
+				entry.DrawOption(v, 160 + sep, y + stringHeight * (i-1), trans)
+			end
 			continue
 		end
 
