@@ -99,4 +99,37 @@ local function menu(v)
 	end
 end
 
-addHook("HUD", menu)
+local function anyKey(v)
+	if not PoyoPennynickel.Menu.Active then return end
+	if not PoyoPennynickel.Menu.AnyKey then return end
+
+	local screenWidth = v.width() / v.dupx()
+	local screenHeight = v.height() / v.dupy()
+
+	local background = v.cachePatch("~031")
+	local scaleX = FixedDiv(screenWidth, background.width)
+	local scaleY = FixedDiv(screenHeight, background.height)
+
+	v.drawStretched(0, 0, scaleX, scaleY, background, V_SNAPTOLEFT|V_SNAPTOTOP|(4 * V_10TRANS))
+
+	-- we will be unhardcoding this later down the line
+	local str = {"Hit the new key for", "Emote", "Press Backspace to cancel"}
+	local width = 0
+	local height = 10 * #str
+
+	for _, str in ipairs(str)
+		width = max($, v.stringWidth(str, V_ALLOWLOWERCASE))
+	end
+
+	v.drawFill(160 - width / 2 - 4, 100 - height / 2 - 4, width + 8, height + 8, 159)
+	for i, str in ipairs(str) do
+		v.drawString(160, 100 - height / 2 + 10 * (i-1), str, V_ALLOWLOWERCASE, "center")
+	end
+end
+
+local function drawer(v)
+	menu(v)
+	anyKey(v)
+end
+
+addHook("HUD", drawer)

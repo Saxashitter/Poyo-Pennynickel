@@ -1,12 +1,3 @@
-local ColorMenu = {
-	Name = "Second Color",
-	Desc = "Choose a color for your visor, bat and the logo on your shirt!",
-	Entries = {},
-	Callbacks = {}
-}
-
-PoyoPennynickel.Menu:AddEntry(ColorMenu)
-
 -- SUB-ENTRIES
 local ColorOption = {
 	Name = "Color",
@@ -21,8 +12,8 @@ local function refreshColorEntries()
 	end
 end
 
-ColorMenu.Callbacks.Enter = refreshColorEntries
+refreshColorEntries()
 ColorOption.Callbacks.SelectionOption = function()
 	COM_BufInsertText(consoleplayer, "poyo_secondcolor "..ColorOption.CurrentOption)
 end
-PoyoPennynickel.Menu:AddEntry(ColorOption, ColorMenu)
+PoyoPennynickel.Menu:AddEntry(ColorOption)

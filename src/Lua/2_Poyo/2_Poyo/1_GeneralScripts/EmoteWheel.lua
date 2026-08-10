@@ -1,7 +1,8 @@
-local EMOTE_KEY = "b"
-local EMOTE_CONFIRM_KEY = "mouse1"
-local EMOTE_LEAVE_KEY = "escape"
-local EMOTE_ALT_KEY = "mouse2"
+PoyoPennynickel.EmoteWheel = false
+PoyoPennynickel.EmoteKey = "b"
+PoyoPennynickel.EmoteConfirmKey = "mouse1"
+PoyoPennynickel.EmoteLeaveKey = "escape"
+PoyoPennynickel.EmoteAltKey = "mouse2"
 
 local CURSOR_X = 0
 local CURSOR_Y = 0
@@ -19,8 +20,6 @@ local CURRENT_SELECTION = 1
 
 local CMD_ANGLE = 0
 local CMD_AIMING = 0
-
-PoyoPennynickel.EmoteWheel = false
 
 local function clamp(val, a, b)
 	return max(a, min(val, b))
@@ -70,7 +69,7 @@ addHook("KeyDown", function(keyevent)
 	if not player.mo.poyoChar then return end
 	if not player.mo.poyoChar:canEmote() then return end
 
-	if not PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_KEY then
+	if not PoyoPennynickel.EmoteWheel and keyevent.name == PoyoPennynickel.EmoteKey then
 		if player.mo.poyoChar.emoting then
 			COM_BufInsertText(consoleplayer, "poyo_stopemote")
 			return true
@@ -84,7 +83,7 @@ addHook("KeyDown", function(keyevent)
 		return true
 	end
 
-	if PoyoPennynickel.EmoteWheel and keyevent.name == EMOTE_LEAVE_KEY then
+	if PoyoPennynickel.EmoteWheel and keyevent.name == PoyoPennynickel.EmoteLeaveKey then
 		if ALTERNATE_EMOTE then
 			ALTERNATE_EMOTE = 0
 			ALTERNATE_EMOTE_SELECTION = 0
@@ -95,7 +94,7 @@ addHook("KeyDown", function(keyevent)
 	end
 
 	if PoyoPennynickel.EmoteWheel
-	and keyevent.name == EMOTE_ALT_KEY
+	and keyevent.name == PoyoPennynickel.EmoteAltKey
 	and ALTERNATE_EMOTE then
 		ALTERNATE_EMOTE_SELECTION = 0
 		ALTERNATE_EMOTE = 0
@@ -103,7 +102,7 @@ addHook("KeyDown", function(keyevent)
 	end
 
 	if PoyoPennynickel.EmoteWheel
-	and keyevent.name == EMOTE_ALT_KEY
+	and keyevent.name == PoyoPennynickel.EmoteAltKey
 	and not ALTERNATE_EMOTE
 	and PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants
 	and #PoyoPennynickel.Class.emotes[CURRENT_SELECTION].variants >= 1 then
@@ -111,7 +110,7 @@ addHook("KeyDown", function(keyevent)
 		return true
 	end
 
-	if PoyoPennynickel.EmoteWheel and (keyevent.name == EMOTE_CONFIRM_KEY or keyevent.name == EMOTE_KEY) then
+	if PoyoPennynickel.EmoteWheel and (keyevent.name == PoyoPennynickel.EmoteConfirmKey or keyevent.name == PoyoPennynickel.EmoteKey) then
 		COM_BufInsertText(consoleplayer, "poyo_emote "..CURRENT_SELECTION.." "..ALTERNATE_EMOTE_SELECTION)
 		PoyoPennynickel.EmoteWheel = false
 		return true
