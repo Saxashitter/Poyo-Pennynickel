@@ -31,7 +31,7 @@ emote.update = function(player, active)
 	local class = mo.poyoChar
 
 	if active and not S_SoundPlaying(mo, sfx_psoboy) then
-		S_StartSound(mo, sfx_psoboy)
+		S_StartSound(mo, sfx_psoboy, player)
 	elseif not active then
 		S_StopSoundByID(mo, sfx_psoboy)
 	end
