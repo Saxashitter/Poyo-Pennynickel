@@ -13,6 +13,7 @@ local function onLoad()
 		};
 		items = {
 			"scatter_ring";
+			"explosion_ring";
 			"grenade_ring";
 		};
 	})
