@@ -192,22 +192,22 @@ local function manageGrapple(player)
 
 		class.grappleHeldTics = $ + 1
 
-		if enemy and enemy.flags & MF_ENEMY|MF_BOSS and enemy.type ~= MT_PLAYER then
-			local speed = max(player_speed, 25 * FU)
+-- 		if enemy and enemy.flags & MF_ENEMY|MF_BOSS and enemy.type ~= MT_PLAYER then
+-- 			local speed = max(player_speed, 25 * FU)
 	
-			mo.momx = ease.linear(FU/4, $, FixedMul(-ux, speed))
-			mo.momy = ease.linear(FU/4, $, FixedMul(-uy, speed))
-			mo.momz = ease.linear(FU/4, $, FixedMul(-uz, speed))
+-- 			mo.momx = ease.linear(FU/4, $, FixedMul(-ux, speed))
+-- 			mo.momy = ease.linear(FU/4, $, FixedMul(-uy, speed))
+-- 			mo.momz = ease.linear(FU/4, $, FixedMul(-uz, speed))
 
-			if dist <= mo.radius + mobj.target.radius * 3 then
-				P_DamageMobj(mobj.target, mobj, player.mo)
+-- 			if dist <= mo.radius + mobj.target.radius * 3 then
+-- 				P_DamageMobj(mobj.target, mobj, player.mo)
 
-				P_SetObjectMomZ(mo, 15 * FU, true)
-				mo.state = S_PLAY_FALL
-				player.powers[pw_flashing] = 20
-				return
-			end
-		end
+-- 				P_SetObjectMomZ(mo, 15 * FU, true)
+-- 				mo.state = S_PLAY_FALL
+-- 				player.powers[pw_flashing] = 20
+-- 				return
+-- 			end
+-- 		end
 
 		if dist > 0 and dist > class.ropeLength then
 			local overshoot = dist - class.ropeLength
