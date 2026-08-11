@@ -12,7 +12,7 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	-- safety
 	mo.eflags = $|MFE_FORCENOSUPER
 
-	if not player.poyo_secondcolor or player.poyo_secondcolor > #skincolors then
+	if not player.poyo_secondcolor or player.poyo_secondcolor > #skincolors or not mo.health then
 		if class.overlayMobj and class.overlayMobj.valid then
 			P_RemoveMobj(class.overlayMobj)
 		end
@@ -40,9 +40,11 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 -- 	class.overlayMobj.momz = mo.momz
 	class.overlayMobj.scale = mo.scale
 	P_MoveOrigin(class.overlayMobj, mo.x, mo.y, mo.z)
-	class.overlayMobj.radius = 0
-	class.overlayMobj.height = 0
+	class.overlayMobj.radius = mo.radius
+	class.overlayMobj.height = mo.height
 	class.overlayMobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY
+	class.overlayMobj.flags2 = ($ & ~MF2_OBJECTFLIP)|(mo.flags2 & MF2_OBJECTFLIP)
+	class.overlayMobj.eflags = ($ & ~MFE_VERTICALFLIP)|(mo.eflags & MFE_VERTICALFLIP)
 	class.overlayMobj.dispoffset = 1 -- beat that liberals
 end)
 
