@@ -133,11 +133,18 @@ COM_AddCommand("poyo_menu", function()
 	if gamestate ~= GS_LEVEL then return end
 	if chatactive then return end
 	if PoyoPennynickel.EmoteWheel then return end
-	PoyoPennynickel.Menu:OpenMenu()
+
+	if not PoyoPennynickel.Menu.Active then
+		PoyoPennynickel.Menu:OpenMenu()
+		return
+	end
+
+	PoyoPennynickel.Menu:CloseMenu()
 end, COM_LOCAL)
 
 addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
+	if MM then return end -- dont open this menu if mm is loaded
 	if keyevent.repeated then
 		if keyevent.name == "f1" then return true end -- foolproof...
 		return
