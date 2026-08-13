@@ -32,7 +32,7 @@ function Class:setSkatingStats(skate)
 	local info = skins[player.skin]
 
 	if skate then
-		player.normalspeed = 30 * FU
+		player.normalspeed = 36 * FU
 		player.acceleration = info.acceleration / 3
 		player.accelstart = info.accelstart / 2
 		player.thrustfactor = info.thrustfactor * 5 / 3
