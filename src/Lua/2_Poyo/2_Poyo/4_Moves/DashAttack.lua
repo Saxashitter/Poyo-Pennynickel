@@ -61,6 +61,25 @@ states[S_PLAY_POYO_DASH_ATTACK] = {
 	action = animationAction
 }
 
+function Class:doDashAttack()
+	local mo = self.mo
+	local player = mo.player
+
+	self.airTransitionedDashAttack = false
+	mo.state = S_PLAY_POYO_DASH_ATTACK
+
+	local momx, momy = self:getDashAttackSpeedXY()
+	local mo_speed = R_PointToDist2(0, 0, mo.momx, mo.momy)
+	local dash_speed = R_PointToDist2(0, 0, momx, momy)
+
+	local div = FU / 3
+	mo.momx = FixedMul($, div)
+	mo.momy = FixedMul($, div)
+	P_Thrust(mo, mo.angle, 8 * mo.scale)
+
+	S_StartSound(mo, sfx_s238)
+end
+
 PoyoPennynickel:addScript("PlayerSpin", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
@@ -77,18 +96,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	if mo.state == S_PLAY_POYO_DASH_ATTACK then return end
 	if mo.state == S_PLAY_POYO_SWING then return end
 
-	class.airTransitionedDashAttack = false
-	mo.state = S_PLAY_POYO_DASH_ATTACK
-	local momx, momy = class:getDashAttackSpeedXY()
-	local mo_speed = R_PointToDist2(0, 0, mo.momx, mo.momy)
-	local dash_speed = R_PointToDist2(0, 0, momx, momy)
-
-	local div = FU / 3
-	mo.momx = FixedMul($, div)
-	mo.momy = FixedMul($, div)
-	P_Thrust(mo, mo.angle, 8 * mo.scale)
-
-	S_StartSound(mo, sfx_s238)
+	class:doDashAttack()
 -- 	S_StartSound(mo, sfx_s244)
 end)
 
