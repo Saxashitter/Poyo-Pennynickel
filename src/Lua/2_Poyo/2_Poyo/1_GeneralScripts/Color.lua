@@ -46,7 +46,7 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	class.overlayMobj.flags2 = ($ & ~MF2_OBJECTFLIP)|(mo.flags2 & MF2_OBJECTFLIP)
 	class.overlayMobj.eflags = ($ & ~MFE_VERTICALFLIP)|(mo.eflags & MFE_VERTICALFLIP)
 	class.overlayMobj.dispoffset = 1 -- beat that liberals
-end)
+end, 1)
 
 COM_AddCommand("poyo_secondcolor", function(player, i)
 	i = tonumber($)
