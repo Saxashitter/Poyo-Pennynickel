@@ -1,5 +1,15 @@
 Character
 SkinName = poyo
-DisplayName = Poyo#Pennynickel
-PlayerText = Poyo may seem weaker than the rest at first glance, but by learning to use your tools to your advantage, he can do anything, and MORE!
+DisplayName = Poyo
+PlayerText = ^5Poyo ^0uses his bat, grappling hook, and skateboard to reach speeds comparable to the rest. A challenge for even the pros.
+
+^5Ability:^0 Baseball Bat
+Swing your bat with different variations based on what your doing using Spin.
+
+^5Ability:^0 Grappling Gun
+Double jump and cling against a wall to swing around.
+
+^5Ability:^0 Skateboard
+Skate around and keep your speed with Custom 1.
+
 #
