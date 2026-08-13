@@ -178,7 +178,7 @@ local function manageGrapple(player)
 			-- lets cap the players momentum
 			local speed = abs(mo.momz) -- R_PointToDist2(0, 0, R_PointToDist2(0, 0, mo.momx, mo.momy), mo.momz)
 			local cap = 17*mo.scale
-			local mult = FU
+			local mult = FU*5/4
 
 			if speed >= cap then
 				local div = FixedDiv(cap, speed)
