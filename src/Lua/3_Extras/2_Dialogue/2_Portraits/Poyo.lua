@@ -1,4 +1,5 @@
 PoyoPennynickel.Dialogue.Characters["Poyo"] = {
+	type = "sprite2",
 	skin = "poyo",
 	sound = sfx_thok,
 	color = SKINCOLOR_MIDNIGHT,
