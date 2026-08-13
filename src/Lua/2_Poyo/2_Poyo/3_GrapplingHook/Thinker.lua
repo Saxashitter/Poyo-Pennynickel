@@ -406,7 +406,19 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 	local class = mo.poyoChar
 
 	if class.skateboard then return end
+
+--	TODO: maybe polish?
+-- 	local ang = mo.angle
+-- 	local rtx = P_ReturnThrustX
+-- 	local rty = P_ReturnThrustY
+-- 	if class:isPlayerBlocked(rtx(nil, ang, mo.radius),rty(nil, ang, mo.radius)) then
+-- 		-- simple wall kick cause it would be unfeasible to grapple right in front of you
+-- 		P_InstaThrust(mo, mo.angle, -16*mo.scale)
+-- 		P_SetObjectMomZ(mo, 8*FU)
+-- 		return
+-- 	end
 	if mo.state == S_PLAY_POYO_GRAPPLE then return end
+	if mo.state == S_PLAY_POYO_DOWNWARDS_SWING then return end
 	if player.pflags & PF_THOKKED then
 		if not class.grappleTimes and not class.skateboarded then return end
 		if not class.successfulGrapple then
