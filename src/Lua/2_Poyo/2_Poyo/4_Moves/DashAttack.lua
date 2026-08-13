@@ -121,11 +121,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 			mo.momx = momx
 			mo.momy = momy
 
-			mo.flags = $|MF_BOUNCE
 			P_XYMovement(mo)
-			if mo and mo.valid then
-				mo.flags = $ & ~MF_BOUNCE
-			end
 
 			if mo and mo.valid and mo.state == S_PLAY_POYO_DASH_ATTACK then
 				-- set the new angle, in case of technical difficulties...
