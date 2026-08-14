@@ -17,14 +17,17 @@ Class.dashAttackDrawangle = 0
 Class.dashAttackAngle = 0
 
 local S_PLAY_POYO_DASH_ATTACK = freeslot("S_PLAY_POYO_DASH_ATTACK")
+local S_PLAY_POYO_LUNGE = freeslot("S_PLAY_POYO_LUNGE")
 
 local ANIMATION_LENGTH = 20 -- the animation length
 local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_SPRING|STR_ANIM|STR_SPIKE -- the animation's pw_powers flags
+local LUNGE_POWERS = STR_ATTACK|STR_WALL|STR_ANIM
 local ANIMATION_PANIM = PA_ABILITY -- the panim of the animation
 local SPEED_START = 36 * FU -- the speed that poyo gets when the move starts
 local JUMP_TICS = 15 -- how long air-transitioned last for
 
-Class.airTransitionedDashAttack = false -- if we transitioned it to air
+-- how long do we keep our friction at FU before our speed drains, leading to chaining n stuff
+Class.dashAttackSpeedLeniency = 0
 
 local function animationAction(mo)
 	if not mo.valid then return end
@@ -37,6 +40,15 @@ local function animationAction(mo)
 	mo.player.panim = ANIMATION_PANIM
 	mo.player.powers[pw_strong] = ANIMATION_POWERS
 	mo.poyoChar.dashAttack = true
+end
+local function lungeAnimationAction(mo)
+	if not mo.valid then return end
+	if not mo.player then return end
+
+	local frame = mo.frame & FF_FRAMEMASK
+
+	mo.player.panim = PA_ABILITY
+	mo.player.powers[pw_strong] = LUNGE_POWERS
 end
 
 function Class:getDashAttackSpeedXY()
@@ -59,6 +71,14 @@ states[S_PLAY_POYO_DASH_ATTACK] = {
 	tics = ANIMATION_LENGTH,
 	nextstate = S_PLAY_WALK,
 	action = animationAction
+}
+
+states[S_PLAY_POYO_LUNGE] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FLY_,
+	tics = -1,
+	nextstate = S_PLAY_POYO_LUNGE,
+	action = lungeAnimationAction
 }
 
 function Class:doDashAttack()
@@ -155,6 +175,13 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		S_StopSoundByID(mo, sfx_s3k7d)
 		class.airTransitionedDashAttack = false
 	end
+
+	if mo.state == S_PLAY_POYO_LUNGE then
+		class.dashAttackSpeedLeniency = 5
+	elseif class.dashAttackSpeedLeniency then
+		class.dashAttackSpeedLeniency = $ - 1
+		mo.friction = FU
+	end
 end)
 
 PoyoPennynickel:addScript("PlayerJump", function(player)
@@ -195,9 +222,11 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		S_StopSoundByID(mo, sfx_s3k7d)
 		S_StopSoundByID(mo, sfx_s238)
 		S_StartSound(mo, sfx_s3k7e)
-		mo.state = S_PLAY_POYO_DASH_ATTACK
-		mo.tics = JUMP_TICS
-		class.airTransitionedDashAttack = true
+-- 		mo.state = S_PLAY_POYO_DASH_ATTACK
+-- 		mo.tics = JUMP_TICS
+-- 		class.airTransitionedDashAttack = true
+		class.dashAttackSpeedLeniency = 5
+		mo.state = S_PLAY_POYO_LUNGE
 		-- mo.state = S_PLAY_ROLL
 		return true
 	end
