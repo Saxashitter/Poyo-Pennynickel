@@ -418,7 +418,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 -- 		return
 -- 	end
 	if mo.state == S_PLAY_POYO_GRAPPLE then return end
-	if mo.state == S_PLAY_POYO_DOWNWARDS_SWING then return end
+-- 	if mo.state == S_PLAY_POYO_DOWNWARDS_SWING then return end
 	if player.pflags & PF_THOKKED then
 		if not class.grappleTimes and not class.skateboarded then return end
 		if not class.successfulGrapple then
