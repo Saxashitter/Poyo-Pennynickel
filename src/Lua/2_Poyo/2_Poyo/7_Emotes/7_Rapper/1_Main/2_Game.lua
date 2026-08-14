@@ -8,6 +8,8 @@ PoyoPennynickel.FNF.KeyBinds = {
 	right = {"d", "l", "right arrow"}
 }
 
+local NOTE_HIT_RANGE = 10
+
 local function get_input(keyevent)
 	for name, binds in pairs(PoyoPennynickel.FNF.KeyBinds)
 		for _, bind in ipairs(binds) do
@@ -105,8 +107,22 @@ function PoyoPennynickel.FNF:UpdateRapBattle(match)
 		if S_MusicName() ~= song.song then
 			S_ChangeMusic(song.song, nil)
 			S_SetMusicPosition(milliseconds)
-		elseif abs(milliseconds - S_GetMusicPosition()) >= 500 then
+		elseif abs(milliseconds - S_GetMusicPosition()) >= 150 then
 			S_SetMusicPosition(milliseconds)
+		end
+
+		local notes = self.Chart
+
+		for id, receptor in ipairs(notes) do
+			if not receptor[1] then continue end -- no note
+			local note = receptor[1]
+
+			local timing = note.timing - match.tics
+
+			if timing < -NOTE_HIT_RANGE then
+				table.remove(receptor, 1)
+				print("missed")
+			end
 		end
 	end
 end
@@ -154,7 +170,7 @@ addHook("KeyDown", function(keyevent)
 
 	local timing = note.timing - match.tics
 
-	if timing <= 12 then
+	if timing <= NOTE_HIT_RANGE then
 		table.remove(self.Chart[i], 1)
 	end
 
@@ -177,4 +193,18 @@ addHook("ThinkFrame", function()
 			table.remove(self.RapBattles, i)
 		end
 	end
+end)
+
+PoyoPennynickel:addScript("PlayerPreUpdate", function(player)
+	local mo = player.mo
+	local class = mo.poyoChar
+
+	if not validity_check(player) then return end
+
+	local result, match = PoyoPennynickel.FNF:PlayerIsInRapBattle(consoleplayer)
+	if not result then return end
+
+	player.cmd.forwardmove = 0
+	player.cmd.sidemove = 0
+	player.cmd.buttons = 0
 end)
