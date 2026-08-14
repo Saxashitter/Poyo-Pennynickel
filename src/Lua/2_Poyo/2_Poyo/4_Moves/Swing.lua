@@ -50,6 +50,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
+	if ZE2 and gametype == GT_ZE2 then return end
 	if MM and MM:isMM() then return end
 	if not P_IsObjectOnGround(mo) then return end
 	if P_PlayerInPain(player) then return end

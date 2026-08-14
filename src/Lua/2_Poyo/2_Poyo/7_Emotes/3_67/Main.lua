@@ -271,7 +271,7 @@ end
 
 states[S_PLAY_POYO_SIXSEVEN] = {
 	sprite = SPR_PLAY,
-	frame = SPR2_TAL3,
+	frame = SPR2_TAL2,
 	tics = 7,
 	action = PoyoPennynickel.EmoteAction,
 	nextstate = S_PLAY_POYO_SIXSEVEN

@@ -6,4 +6,8 @@ function PoyoPennynickel.AfterimageEffect(mo)
 	ghost.frame = $|FF_ADD
 	ghost.destscale = FU * 5
 	ghost.dispoffset = -1
+
+	if mo and mo.player and mo.player.poyo_secondcolor then
+		ghost.color = mo.player.poyo_secondcolor
+	end
 end

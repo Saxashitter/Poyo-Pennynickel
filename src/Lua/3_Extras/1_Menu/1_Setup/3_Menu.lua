@@ -113,6 +113,11 @@ function PoyoPennynickel.Menu:StepSelectionValue(step)
 end
 
 function PoyoPennynickel.Menu:StepBack()
+	if self.AnyKey then
+		self.AnyKey = nil
+		return
+	end
+
 	if not self.Current.Parent then
 		self:CloseMenu()
 		return
@@ -128,12 +133,22 @@ COM_AddCommand("poyo_menu", function()
 	if gamestate ~= GS_LEVEL then return end
 	if chatactive then return end
 	if PoyoPennynickel.EmoteWheel then return end
-	PoyoPennynickel.Menu:OpenMenu()
+
+	if not PoyoPennynickel.Menu.Active then
+		PoyoPennynickel.Menu:OpenMenu()
+		return
+	end
+
+	PoyoPennynickel.Menu:CloseMenu()
 end, COM_LOCAL)
 
 addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
-	if keyevent.repeated then return end
+	if MM then return end -- dont open this menu if mm is loaded
+	if keyevent.repeated then
+		if keyevent.name == "f1" then return true end -- foolproof...
+		return
+	end
 	if gamestate ~= GS_LEVEL then return end
 	if chatactive then return end
 	if PoyoPennynickel.EmoteWheel then return end
@@ -150,7 +165,12 @@ addHook("KeyDown", function(keyevent)
 
 	if not PoyoPennynickel.Menu.Active then return end
 	if input.keyNameToNum(keyevent.name) == input.gameControlToKeyNum(GC_CONSOLE) then return end
-	if keyevent.repeated then return end
+
+	if PoyoPennynickel.Menu.AnyKey then
+		PoyoPennynickel.Menu.AnyKey(keyevent)
+		PoyoPennynickel.Menu.AnyKey = nil
+		return true
+	end
 
 	local control = PoyoPennynickel.Menu:GetInput(keyevent)
 	if not control then return end

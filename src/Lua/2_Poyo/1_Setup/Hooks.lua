@@ -23,17 +23,32 @@ local function _callScripts(scriptName, ...)
 	if not scripts[scriptName] then return end
 
 	local returns = nil
-	for _, func in ipairs(scripts[scriptName]) do
+	for _, func in ipairs(scripts[scriptName].pre) do
 		returns = func(...) or returns
 	end
+	for _, func in ipairs(scripts[scriptName].cur) do
+		returns = func(...) or returns
+	end
+	for _, func in ipairs(scripts[scriptName].post) do
+		returns = func(...) or returns
+	end
+
 
 	return returns
 end
 
-function PoyoPennynickel:addScript(name, script)
-	scripts[name] = $ or {}
+function PoyoPennynickel:addScript(name, script, type)
+	scripts[name] = $ or {pre = {}, cur = {}, post = {}}
 
-	scripts[name][#scripts[name] + 1] = script
+	local tbl = scripts[name].cur
+
+	if type == -1 then
+		tbl = scripts[name].pre
+	elseif type == 1 then
+		tbl = scripts[name].post
+	end
+
+	tbl[#tbl + 1] = script
 end
 
 addHook("PreThinkFrame", function()

@@ -32,7 +32,7 @@ function Class:setSkatingStats(skate)
 	local info = skins[player.skin]
 
 	if skate then
-		player.normalspeed = 30 * FU
+		player.normalspeed = 36 * FU
 		player.acceleration = info.acceleration / 3
 		player.accelstart = info.accelstart / 2
 		player.thrustfactor = info.thrustfactor * 5 / 3
@@ -148,6 +148,7 @@ PoyoPennynickel:addScript("PlayerUpdate", function(player)
 	-- if P_IsObjectOnGround(mo) then return end
 
 	if MM and MM:isMM() then return end
+	if ZE2 and gametype == GT_ZE2 then return end
 	if player.cmd.buttons & BT_CUSTOM1 == 0 then return end
 	if player.lastbuttons & BT_CUSTOM1 then return end
 

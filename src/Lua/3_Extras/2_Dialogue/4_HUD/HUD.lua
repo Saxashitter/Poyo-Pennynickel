@@ -15,9 +15,18 @@ addHook("HUD", function(v, player, camera)
 
 		local character = PoyoPennynickel.Dialogue.Characters[name]
 		local expression = character.expressions.default
-		local patch, flip = v.getSprite2Patch(character.skin, expression.sprite, false, A, portrait.rotation, 0)
+		local patch, flip = nil, false
 		local flags = V_SNAPTOBOTTOM|portrait.flags
 		local color = nil
+
+		if character.type == "sprite2" then
+			patch, flip = v.getSprite2Patch(character.skin, expression.sprite, false, A, portrait.rotation, 0)
+		elseif character.type == "sprite" then
+			patch, flip = v.getSpritePatch(expression.sprite, A, 0)
+		else
+			patch = v.cachePatch(expression.sprite)
+		end
+		
 
 		if currentLine.character ~= name then
 			color = v.getColormap(TC_RAINBOW, SKINCOLOR_GREY)

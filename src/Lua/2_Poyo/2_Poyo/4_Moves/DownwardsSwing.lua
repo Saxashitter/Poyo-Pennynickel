@@ -21,6 +21,9 @@ Class.downwardsSwingAngle = 0
 -- the time in which the player is moved forward
 Class.downwardsSwingMove = 0
 
+-- for input leniency!
+Class.dashAttackSwingLeniency = 0
+
 local ANIMATION_LENGTH = D -- the animation length
 local FRAME_START = C -- when the hitbox starts
 local ANIMATION_TICS = 3 -- the tics of the animation
@@ -81,6 +84,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
+	if ZE2 and gametype == GT_ZE2 then return end
 	if MM and MM:isMM() then return end
 	if P_IsObjectOnGround(mo) then return end
 	if P_PlayerInPain(player) then return end
@@ -95,16 +99,28 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 -- 	if mo.state == S_PLAY_POYO_UPPERCUT then return end
 	if mo.state == S_PLAY_POYO_GRAPPLED then return end
 
+	class.dashAttackSwingLeniency = 10
 	mo.state = S_PLAY_POYO_DOWNWARDS_SWING
 end)
 
-PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
+PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
 	if mo.state ~= S_PLAY_POYO_DOWNWARDS_SWING then
+		if class.dashAttackSwingLeniency
+		and P_IsObjectOnGround(mo) then
+			mo.momx = $*2
+			mo.momy = $*2
+			class:doDashAttack()
+		end
+		class.dashAttackSwingLeniency = false
 		S_StopSoundByID(mo, sfx_s3k8e)
 		return
+	end
+
+	if class.dashAttackSwingLeniency then
+		class.dashAttackSwingLeniency = $ - 1
 	end
 
 	local angle = class.downwardsSwingAngle

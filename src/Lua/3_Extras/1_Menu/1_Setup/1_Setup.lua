@@ -1,5 +1,6 @@
 PoyoPennynickel.Menu = {
 	Active = false,
+	AnyKey = nil, -- if this is a function, we are on the anykey screen
 	Selection = 1,
 	Entries = {},
 	Callbacks = {},

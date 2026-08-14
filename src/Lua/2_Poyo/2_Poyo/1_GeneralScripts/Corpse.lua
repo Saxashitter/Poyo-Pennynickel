@@ -29,6 +29,7 @@ end, MT_POYO_CORPSE)
 
 PoyoPennynickel:addScript("PlayerDied", function(player)
 	if MM and MM:isMM() then return end
+	if ZE2 and gametype == GT_ZE2 then return end
 
 	local mo = player.mo
 	local class = mo.poyoChar
