@@ -20,7 +20,7 @@ local function get_input(keyevent)
 	end
 end
 
-local function validity_check(player)
+function PoyoPennynickel.FNF:PlayerIsValid(player)
 	return player and player.valid and player.mo and player.mo.valid and player.mo.health and PoyoPennynickel.FNF.active(player)
 end
 
@@ -89,8 +89,8 @@ end
 function PoyoPennynickel.FNF:UpdateRapBattle(match)
 	local song = self.Songs[match.song]
 
-	if not validity_check(match.players[1])
-	and not validity_check(match.players[2]) then
+	if not PoyoPennynickel.FNF:PlayerIsValid(match.players[1])
+	and not PoyoPennynickel.FNF:PlayerIsValid(match.players[2]) then
 		print("both players died")
 		return true
 	end
@@ -199,7 +199,7 @@ PoyoPennynickel:addScript("PlayerPreUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
-	if not validity_check(player) then return end
+	if not PoyoPennynickel.FNF:PlayerIsValid(player) then return end
 
 	local result, match = PoyoPennynickel.FNF:PlayerIsInRapBattle(consoleplayer)
 	if not result then return end
