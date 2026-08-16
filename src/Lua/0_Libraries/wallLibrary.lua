@@ -54,7 +54,7 @@ addHook("MobjMoveCollide", function(ray, mobj)
 end, MT_SAXA_RAY)
 
 local function checkForCollisionOnMomentum(mo, x, y, z, steps)
-	if steps == nil then steps = 48 end
+	if steps == nil then steps = 320 end
 	if z == nil then z = 0 end
 
 	local collider = _RAY
@@ -94,7 +94,7 @@ local function checkForCollisionOnMomentum(mo, x, y, z, steps)
 		collider.flags = 0
 		collider.radius = mo.radius
 		collider.height = mo.height
-		P_ZMovement(collider)
+		P_RingZMovement(collider)
 		P_XYMovement(collider)
 
 		if not collider or not collider.valid then
