@@ -170,10 +170,10 @@ local function manageGrapple(player)
 			mo.state = S_PLAY_FALL
 			player.powers[pw_flashing] = 20
 
-			if class.grappleHeldTics <= 2 then
-				mo.momz = 0
-				return
-			end
+-- 			if class.grappleHeldTics <= 2 then
+-- 				mo.momz = 0
+-- 				return
+-- 			end
 
 			-- lets cap the players momentum
 			local speed = abs(mo.momz) -- R_PointToDist2(0, 0, R_PointToDist2(0, 0, mo.momx, mo.momy), mo.momz)
@@ -183,10 +183,9 @@ local function manageGrapple(player)
 			if speed >= cap then
 				local div = FixedDiv(cap, speed)
 				div = FixedMul($, mult)
-				print(string.format("%.2f", div))
 	
-				mo.momx = FixedMul($, div)
-				mo.momy = FixedMul($, div)
+-- 				mo.momx = FixedMul($, div)
+-- 				mo.momy = FixedMul($, div)
 				mo.momz = FixedMul($, div)
 			end
 			return
@@ -340,7 +339,7 @@ local function manageGrapple(player)
 		local uy = FixedDiv(dy, dist)
 		local uz = FixedDiv(dz, dist)
 
-		if dist > 0 and player.cmd.buttons & BT_JUMP then
+		if dist > 0 and player.cmd.buttons & BT_JUMP and player.cmd.buttons & BT_SPIN == 0 then
 			local dx = mo.x - mobj.x
 			local dy = mo.y - mobj.y
 
@@ -418,7 +417,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 -- 		return
 -- 	end
 	if mo.state == S_PLAY_POYO_GRAPPLE then return end
--- 	if mo.state == S_PLAY_POYO_DOWNWARDS_SWING then return end
+	if mo.state == S_PLAY_POYO_DOWNWARDS_SWING then return end
 	if player.pflags & PF_THOKKED then
 		if not class.grappleTimes and not class.skateboarded then return end
 		if not class.successfulGrapple then
