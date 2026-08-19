@@ -1,4 +1,4 @@
-PoyoPennynickel.FNF.Songs[#PoyoPennynickel.FNF.Songs+1] = {
+return { -- PoyoPennynickel.FNF.Songs[#PoyoPennynickel.FNF.Songs+1] = {
 	name = "Dad-Battle",
 	song = "PYFNDB",
 	length = 3010,
