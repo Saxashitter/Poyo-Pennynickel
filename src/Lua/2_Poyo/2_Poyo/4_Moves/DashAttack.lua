@@ -176,8 +176,9 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		class.airTransitionedDashAttack = false
 	end
 
-	if mo.state == S_PLAY_POYO_LUNGE then
-		class.dashAttackSpeedLeniency = 5
+	if mo.state == S_PLAY_POYO_LUNGE
+	or mo.state == S_PLAY_POYO_DASH_ATTACK then
+		class.dashAttackSpeedLeniency = 10
 	elseif class.dashAttackSpeedLeniency then
 		class.dashAttackSpeedLeniency = $ - 1
 		mo.friction = FU
@@ -225,7 +226,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 -- 		mo.state = S_PLAY_POYO_DASH_ATTACK
 -- 		mo.tics = JUMP_TICS
 -- 		class.airTransitionedDashAttack = true
-		class.dashAttackSpeedLeniency = 5
+		class.dashAttackSpeedLeniency = 10
 		mo.state = S_PLAY_POYO_LUNGE
 		-- mo.state = S_PLAY_ROLL
 		return true

@@ -31,7 +31,7 @@ local ANIMATION_END_TICS = 9 -- the tics of the last frame of the animation
 local THRUST_SPEED = 25 * FU -- the speed that the player is launched after FRAME_START
 local SEMI_THRUST_SPEED = 12 * FU -- used for direction correction... not sure how to explain but its an additional thrust
 local THRUST_TIME = 20 -- the tics that speed remains for
-local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_FLOOR|STR_SPRING|STR_ANIM|STR_HEAVY -- the animation's pw_powers flags
+local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_FLOOR|STR_SPRING|STR_ANIM|STR_HEAVY|STR_GUARD -- the animation's pw_powers flags
 local ANIMATION_PANIM = PA_ABILITY -- the panim of the animation
 
 local function animationAction(mo)
@@ -98,6 +98,7 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 -- 	if mo.state == S_PLAY_POYO_DASH_BOUNCE then return end
 -- 	if mo.state == S_PLAY_POYO_UPPERCUT then return end
 	if mo.state == S_PLAY_POYO_GRAPPLED then return end
+	if mo.state == S_PLAY_POYO_GRAPPLE then return end
 
 	class.dashAttackSwingLeniency = 10
 	mo.state = S_PLAY_POYO_DOWNWARDS_SWING
@@ -110,6 +111,18 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	if mo.state ~= S_PLAY_POYO_DOWNWARDS_SWING then
 		if class.dashAttackSwingLeniency
 		and P_IsObjectOnGround(mo) then
+			if player.cmd.buttons & BT_JUMP then
+				local jumpfactor = player.jumpfactor
+	
+				player.jumpfactor = $*5/4
+				player.pflags = $ & ~PF_JUMPED
+	
+				P_DoJump(player, true)
+
+				player.mo.state = S_PLAY_ROLL
+				player.jumpfactor = jumpfactor
+				return
+			end
 			mo.momx = $*2
 			mo.momy = $*2
 			class:doDashAttack()
