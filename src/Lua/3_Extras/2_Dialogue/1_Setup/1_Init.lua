@@ -34,6 +34,32 @@ COM_AddCommand("test", function()
 	PoyoPennynickel.setTextset("template")
 end, COM_ADMIN)
 
+addHook("PreThinkFrame", function()
+	if not Dialogue.CurrentText then return end
+
+	local textset = Dialogue.Textsets[Dialogue.CurrentText]
+	local current_line = textset.text[Dialogue.LineIndex]
+
+	local controllable = false
+	if current_line.controllable then
+		controllable = true
+	end
+
+	if textset.controllable then
+		controllable = true
+	end
+
+	if controllable then
+		return
+	end
+
+	for player in players.iterate do
+		player.cmd.buttons = 0
+		player.cmd.sidemove = 0
+		player.cmd.forwardmove = 0
+	end
+end)
+
 addHook("ThinkFrame", function()
 	if not Dialogue.CurrentText then return end
 
@@ -47,6 +73,7 @@ addHook("ThinkFrame", function()
 	elseif Dialogue.LinePosition < #current_line.text then
 		Dialogue.LineTics = current_line.speed
 		Dialogue.LinePosition = $ + 1
+		S_StopSoundByID(nil, character.sound)
 		S_StartSound(nil, character.sound)
 
 	elseif Dialogue.LineDelay then

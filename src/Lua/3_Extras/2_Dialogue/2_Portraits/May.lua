@@ -1,4 +1,4 @@
-PoyoPennynickel.Dialogue.Characters["Poyo"] = {
+PoyoPennynickel.Dialogue.Characters["May"] = {
 	type = "sprite2",
 	skin = "poyo",
 	sound = sfx_thok,
@@ -11,5 +11,7 @@ PoyoPennynickel.Dialogue.Characters["Poyo"] = {
 		["default"] = {
 			sprite = SPR2_STND
 		}
-	},	
+	},
+	
 }
+PoyoPennynickel.Dialogue.Characters["Poyo2"] = PoyoPennynickel.Dialogue.Characters["Poyo"]

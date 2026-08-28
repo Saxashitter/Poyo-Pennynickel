@@ -1,3 +1,25 @@
+Level P0
+Levelname = Poyo Tutorial
+Act = 0
+Music = TUTORL
+NextLevel = 1
+TypeOfLevel = Singleplayer
+HideInStats = true
+SkyNum = 99
+ForceCharacter = poyo
+NoTitleCard = true
+Lua.PoyoPennynickel_Tutorial = true
+
+Level P1
+Levelname = Refill Mart
+Act = 0
+Music = GFZ1
+NextLevel = 1
+TypeOfLevel = Singleplayer,Co-op
+HideInStats = true
+SkyNum = 1
+
+
 Character
 SkinName = poyo
 DisplayName = Poyo
