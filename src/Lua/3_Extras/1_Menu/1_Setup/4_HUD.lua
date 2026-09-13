@@ -43,9 +43,9 @@ local function menu(v)
 	if player and player.valid then
 		poyomap = v.getColormap(player.skin, player.skincolor)
 
-		if player.poyo_secondcolor then
+		if PoyoPennynickel.SaveData.VisorColor then
 			visor = v.cachePatch("POYO_BINGCHILLING_3")
-			translatemap = v.getColormap(nil, player.poyo_secondcolor)
+			translatemap = v.getColormap(nil, PoyoPennynickel.SaveData.VisorColor)
 		end
 	end
 

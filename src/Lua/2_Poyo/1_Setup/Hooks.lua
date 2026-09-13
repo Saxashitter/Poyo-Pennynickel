@@ -79,6 +79,18 @@ addHook("PlayerThink", function(player)
 	_callScripts("PlayerUpdate", player)
 end)
 
+addHook("PlayerHeight", function(player)
+	if not safeInitPoyo(player) then return end
+
+	return _callScripts("PlayerHeight", player)
+end)
+
+addHook("PlayerCanEnterSpinGaps", function(player)
+	if not safeInitPoyo(player) then return end
+
+	return _callScripts("PlayerCanEnterSpinGaps", player)
+end)
+
 addHook("MobjThinker", function(mo)
 	if not mo.valid then return end
 	if not safeInitPoyo(mo.player) then return end

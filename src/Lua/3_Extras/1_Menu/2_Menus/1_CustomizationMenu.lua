@@ -24,7 +24,8 @@ end
 
 refreshColorEntries()
 ColorOption.Callbacks.SelectionOption = function()
-	COM_BufInsertText(consoleplayer, "poyo_secondcolor "..ColorOption.Options[ColorOption.CurrentOption].color)
+	PoyoPennynickel.SaveData.VisorColor = ColorOption.Options[ColorOption.CurrentOption].color
+	PoyoPennynickel:SaveFile()
 end
 ColorOption.DrawOption = function(v, x, y)
 	local width = v.stringWidth(ColorOption.Options[ColorOption.CurrentOption].value, V_ALLOWLOWERCASE, "thin")
@@ -34,6 +35,7 @@ ColorOption.DrawOption = function(v, x, y)
 
 	v.drawFill(x + 8, y + 8, width, 1, color.ramp[6])
 end
+ColorOption.CurrentOption = PoyoPennynickel.SaveData.VisorColor+1
 CustomizationMenu.Callbacks.Enter = function()
 	refreshColorEntries()
 end

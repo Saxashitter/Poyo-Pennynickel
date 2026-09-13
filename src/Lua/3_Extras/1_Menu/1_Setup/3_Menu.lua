@@ -59,6 +59,9 @@ end
 function PoyoPennynickel.Menu:CloseMenu()
 	self.Active = false
 	S_ChangeMusic(mapmusname, true)
+	if consoleplayer and consoleplayer.valid and consoleplayer.poyo_secondcolor ~= PoyoPennynickel.SaveData.VisorColor then
+		COM_BufInsertText(consoleplayer, "poyo_secondcolor "..PoyoPennynickel.SaveData.VisorColor)
+	end
 end
 
 function PoyoPennynickel.Menu:StepSelection(i)
@@ -144,16 +147,17 @@ end, COM_LOCAL)
 
 addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
-	if MM then return end -- dont open this menu if mm is loaded
 	if keyevent.repeated then
 		if keyevent.name == "f1" then return true end -- foolproof...
-		return
+-- 		return
 	end
 	if gamestate ~= GS_LEVEL then return end
 	if chatactive then return end
 	if PoyoPennynickel.EmoteWheel then return end
 
 	if keyevent.name == "f1" then
+		if MM then return end -- dont open this menu if mm is loaded
+
 		if not PoyoPennynickel.Menu.Active then
 			PoyoPennynickel.Menu:OpenMenu()
 			return true
