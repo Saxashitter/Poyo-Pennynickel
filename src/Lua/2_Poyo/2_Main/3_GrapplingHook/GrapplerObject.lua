@@ -8,7 +8,7 @@ local MT_POYO_GRAPPLER = freeslot("MT_POYO_GRAPPLER")
 mobjinfo[MT_POYO_GRAPPLER] = {
 	spawnstate = S_THOK,
 	radius = 10 * FU,
-	height = 36 * FU,
+	height = 20 * FU,
 	flags = MF_NOGRAVITY
 }
 
@@ -16,52 +16,6 @@ local function clamp(v, lo, hi)
     if v < lo then return lo end
     if v > hi then return hi end
     return v
-end
-
-local function resolveMobjAgainstLine(mobj, line)
-	local halfX = mobj.radius
-	local halfY = mobj.radius
-
-	-- where the mobj was trying to go this tic
-	local intendedX = mobj.x + mobj.momx
-	local intendedY = mobj.y + mobj.momy
-
-	-- line direction and its normal (perpendicular)
-	local ldx, ldy = line.dx, line.dy
-	local llen = FixedHypot(ldx, ldy)
-	if llen == 0 then return mobj.x, mobj.y end -- degenerate zero-length line, bail safely
-
-	local nx = FixedDiv(-ldy, llen)
-	local ny = FixedDiv(ldx, llen)
-
-	-- reference point on the line to measure from
-	local v1x, v1y = line.v1.x, line.v1.y
-
-	-- signed distance of the mobj's CURRENT (pre-move, still-valid) position
-	-- from the line -- this can never have tunneled through, so its sign
-	-- reliably tells us which side of the wall we're actually on
-	local curRelX = mobj.x - v1x
-	local curRelY = mobj.y - v1y
-	local curD = FixedMul(curRelX, nx) + FixedMul(curRelY, ny)
-	local sign = (curD < 0) and -1 or 1
-
-	-- signed distance of the INTENDED position from the line
-	local relx = intendedX - v1x
-	local rely = intendedY - v1y
-	local d = FixedMul(relx, nx) + FixedMul(rely, ny)
-
-	-- effective half-extent of the AABB projected onto this normal direction
-	local r = FixedMul(halfX, abs(nx)) + FixedMul(halfY, abs(ny))
-
-	local desiredD = sign * r
-	local delta = desiredD - d
-
-	-- shift intended position along the normal by delta so it ends up
-	-- exactly `r` away from the line, on the side we know we started on
-	local newX = intendedX + FixedMul(delta, nx)
-	local newY = intendedY + FixedMul(delta, ny)
-
-	return newX, newY
 end
 
 addHook("MobjSpawn", function(cast)
@@ -75,26 +29,33 @@ addHook("MobjMoveBlocked", function(cast, mobj, line)
 	cast.hit = true
 
 	if line and line.valid then
-		local z = cast.z
-		local lx, ly = P_ClosestPointOnLine(cast.x, cast.y, line)
-		local x, y = resolveMobjAgainstLine(cast, line)
-
-		cast.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT
-		P_SetOrigin(cast, x, y, z)
-
-		cast.momx = 0
-		cast.momy = 0
+		P_SlideMove(cast)
 		cast.hitline = line
+		cast.hittics = 5
 	end
 end, MT_POYO_GRAPPLER)
 
 addHook("MobjThinker", function(cast)
 	local mo = cast.target
 
-	if not mo then return end
-	if not mo.valid then return end
+	if mo and mo.valid then
+		P_MoveOrigin(cast, mo.x + cast.ox, mo.y + cast.oy, mo.z + cast.oz)
+	elseif cast.hit and cast.hitline and cast.hittics and cast.hitline.special == 500 then
+		local line = cast.hitline
 
-	P_MoveOrigin(cast, mo.x + cast.ox, mo.y + cast.oy, mo.z + cast.oz)
+		local x = -line.args[1] * FU
+		local y = line.args[2] * FU
+		local cx, cy = P_ClosestPointOnLine(cast.x, cast.y, line)
+		local angle = R_PointToAngle2(cast.x, cast.y, cx, cy)
+
+		-- TODO: correct this if line sloped (could lines even be sloped???)
+		cast.momz = y
+		cast.momx = P_ReturnThrustX(nil, line.angle, x)
+		cast.momy = P_ReturnThrustY(nil, line.angle, x)
+
+		P_Thrust(cast, angle, FU)
+		cast.hittics = $ - 1
+	end
 end, MT_POYO_GRAPPLER)
 
 local function onCollision(cast, mo)

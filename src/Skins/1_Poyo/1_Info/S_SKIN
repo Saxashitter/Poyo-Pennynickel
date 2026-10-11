@@ -1,5 +1,6 @@
 name = poyo
-flags = SF_NOJUMPSPIN|SF_NOJUMPDAMAGE|SF_NOSKID|SF_NOSHIELDABILITY
+flags = SF_NOJUMPSPIN|SF_NOJUMPDAMAGE|SF_NOSHIELDABILITY
+shieldscale = 1.5
 realname = Poyo
 hudname = POYO
 startcolor = 96
@@ -16,4 +17,4 @@ acceleration = 36
 contspeed = 17
 contangle = 3
 height = 68
-DSJUMP = DSS229
+DSJUMP = DSPY_JMP

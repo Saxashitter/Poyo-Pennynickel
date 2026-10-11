@@ -123,7 +123,7 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	end
 end)
 
-PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
+PoyoPennynickel:addScript("PlayerUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
@@ -151,6 +151,38 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	for k,v in ipairs(class.emotes) do
 		if v.playerupdate then
 			v.playerupdate(player, v.active(player))
+		end
+	end
+end)
+
+PoyoPennynickel:addScript("PlayerPreUpdate", function(player)
+	local mo = player.mo
+	local class = mo.poyoChar
+
+	-- update emoting check
+	if class.emoting then
+		local new_emoting = 0
+
+		if class:canEmote() then
+			for k,v in ipairs(class.emotes) do
+				if v.active(player) then
+					new_emoting = k
+					break
+				end
+			end
+		end
+
+		if not new_emoting then
+			class.emotes[class.emoting].finish(player)
+			class.emoting = 0
+			class.emoteVariant = 0
+		end
+	end
+
+	-- update emotes
+	for k,v in ipairs(class.emotes) do
+		if v.playerpreupdate then
+			v.playerpreupdate(player, v.active(player))
 		end
 	end
 end)

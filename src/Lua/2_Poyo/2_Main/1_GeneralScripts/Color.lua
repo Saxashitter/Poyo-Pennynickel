@@ -8,13 +8,18 @@ Class.overlayMobj = nil
 local LOADED_VISOR_COLOR = false
 
 addHook("GameQuit", do LOADED_VISOR_COLOR = false end)
+addHook("PlayerJoin", function(node)
+	if node == #consoleplayer then
+		LOADED_VISOR_COLOR = false
+	end
+end)
 
 PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
 	-- if we are poyo... load in our visor
-	if #player == #consoleplayer and not LOADED_VISOR_COLOR and PoyoPennynickel.SaveData.VisorColor then
+	if player == consoleplayer and not LOADED_VISOR_COLOR and PoyoPennynickel.SaveData.VisorColor and not isdedicatedserver and multiplayer then
 		COM_BufInsertText(consoleplayer, "poyo_secondcolor "..PoyoPennynickel.SaveData.VisorColor)
 		LOADED_VISOR_COLOR = true
 	end
@@ -32,6 +37,16 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 
 	if not class.overlayMobj or not class.overlayMobj.valid then
 		class.overlayMobj = P_SpawnMobjFromMobj(mo, 0,0,0, MT_THOK)
+	end
+
+	local skin = skins[mo.skin]
+	local supersprites = skin.supersprites
+	local visible = true
+	local sprite2 = mo.sprite2 & FF_FRAMEMASK
+
+	if sprite2 ~= SPR2_STND -- temp
+	and supersprites[sprite2].numframes == 0 then
+		visible = false
 	end
 
 	class.overlayMobj.skin = mo.skin
@@ -59,6 +74,12 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	class.overlayMobj.flags2 = ($ & ~MF2_OBJECTFLIP)|(mo.flags2 & MF2_OBJECTFLIP)
 	class.overlayMobj.eflags = ($ & ~MFE_VERTICALFLIP)|(mo.eflags & MFE_VERTICALFLIP)
 	class.overlayMobj.dispoffset = 1 -- beat that liberals
+
+	if not visible then
+		class.overlayMobj.alpha = 0
+	else
+		class.overlayMobj.alpha = mo.alpha
+	end
 end, 1)
 
 COM_AddCommand("poyo_secondcolor", function(player, i)

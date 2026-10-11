@@ -3,12 +3,12 @@ local PoyoPennynickel = PoyoPennynickel
 local Class = PoyoPennynickel.Class
 
 local function isPoyo(player)
-	return player.mo and player.mo.valid and player.mo.skin == "poyo"
+	return player and player.valid and player.mo and player.mo.valid and player.mo.skin == "poyo"
 end
 
 local function safeInitPoyo(player)
 	if not isPoyo(player) then
-		if player.mo and player.mo.valid then
+		if player and player.valid and player.mo and player.mo.valid then
 			player.mo.poyoChar = nil
 		end
 

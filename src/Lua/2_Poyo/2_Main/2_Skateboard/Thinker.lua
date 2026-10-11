@@ -8,11 +8,76 @@ Class.skateboard = false
 Class.skateboarded = false -- so we can do hop off skateboard + grapple...
 Class.lastDrawangle = 0 -- for momentum conversion thing
 
+local S_PLAY_POYO_SKATEBOARD_STND = freeslot("S_PLAY_POYO_SKATEBOARD_STND")
+local S_PLAY_POYO_SKATEBOARD_WALK = freeslot("S_PLAY_POYO_SKATEBOARD_WALK")
+local S_PLAY_POYO_SKATEBOARD_RUN = freeslot("S_PLAY_POYO_SKATEBOARD_RUN")
+local S_PLAY_POYO_SKATEBOARD_KICKFLIP = freeslot("S_PLAY_POYO_SKATEBOARD_KICKFLIP")
+local S_PLAY_POYO_SKATEBOARD_EQUIP_AIR = freeslot("S_PLAY_POYO_SKATEBOARD_EQUIP_AIR")
 local S_PLAY_POYO_SKATEBOARD_CLING = freeslot("S_PLAY_POYO_SKATEBOARD_CLING")
 
+states[S_PLAY_POYO_SKATEBOARD_STND] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_TIRE,
+	tics = -1,
+	nextstate = S_PLAY_POYO_SKATEBOARD_STND,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		mo.player.panim = PA_IDLE
+	end
+}
+states[S_PLAY_POYO_SKATEBOARD_WALK] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_GLID,
+	tics = 2,
+	nextstate = S_PLAY_POYO_SKATEBOARD_WALK,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		mo.player.panim = PA_WALK
+	end
+}
+states[S_PLAY_POYO_SKATEBOARD_RUN] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_TIRE,
+	tics = -1,
+	nextstate = S_PLAY_POYO_SKATEBOARD_RUN,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		mo.player.panim = PA_RUN
+	end
+}
+states[S_PLAY_POYO_SKATEBOARD_KICKFLIP] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FRUN,
+	tics = 2,
+	nextstate = S_PLAY_POYO_SKATEBOARD_KICKFLIP,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		mo.player.panim = PA_FALL
+	end
+}
+states[S_PLAY_POYO_SKATEBOARD_EQUIP_AIR] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_CLNG,
+	tics = -1,
+	nextstate = S_PLAY_POYO_SKATEBOARD_EQUIP_AIR,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		mo.player.panim = PA_FALL
+	end
+}
 states[S_PLAY_POYO_SKATEBOARD_CLING] = {
 	sprite = SPR_PLAY,
-	frame = SPR2_ROLL,
+	frame = SPR2_FLT_,
 	tics = 5,
 	nextstate = S_PLAY_POYO_SKATEBOARD_CLING,
 	action = function(mo)
@@ -50,7 +115,6 @@ local function triggerSkateboard(player)
 	local class = mo.poyoChar
 
 	class.skateboard = not $
-	mo.colorized = class.skateboard
 
 	player.poyo_skateboard = class.skateboard
 
@@ -58,6 +122,10 @@ local function triggerSkateboard(player)
 		class:setSkatingStats(true)
 		if player.pflags & PF_JUMPED then
 			player.pflags = $|PF_THOKKED
+		end
+
+		if not P_IsObjectOnGround(mo) then
+			mo.state = S_PLAY_POYO_SKATEBOARD_EQUIP_AIR
 		end
 	else
 		class:setSkatingStats(false)
@@ -120,7 +188,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 
 		player.pflags = $|pflags
 
-		local control_direction = player.drawangle
+		local control_direction = player.drawangle - ANGLE_180
 		if player.cmd.forwardmove or player.cmd.sidemove then
 			control_direction = player.cmd.angleturn * FU + R_PointToAngle2(0, 0, player.cmd.forwardmove<<16, -player.cmd.sidemove<<16)
 		end
@@ -131,7 +199,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		local wall_speed = FixedMul(base_jump_speed, ratio)
 		local direction_speed = base_jump_speed - wall_speed
 
-		P_Thrust(mo, player.drawangle, wall_speed)
+		P_Thrust(mo, player.drawangle - ANGLE_180, wall_speed)
 		P_Thrust(player.mo, control_direction, direction_speed)
 		player.pflags = $|PF_JUMPDOWN
 		S_StartSound(mo, sfx_s3k4c)
@@ -182,11 +250,33 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
-	if class.skateboard and class.flags & PAB_SKATEBOARD == 0 then
-		class.skateboard = false
-		mo.colorized = class.skateboard
-		player.poyo_skateboard = class.skateboard
-		class:setSkatingStats(false)
+	-- not my best code but it works
+	if class.skateboard then
+		if class.flags & PAB_SKATEBOARD == 0 then
+			class.skateboard = false
+			player.poyo_skateboard = class.skateboard
+			class:setSkatingStats(false)
+		elseif player.mo.state == S_PLAY_STND then
+			player.mo.state = S_PLAY_POYO_SKATEBOARD_STND
+		elseif player.mo.state == S_PLAY_WALK then
+			player.mo.state = S_PLAY_POYO_SKATEBOARD_WALK
+		elseif player.mo.state == S_PLAY_RUN then
+			player.mo.state = S_PLAY_POYO_SKATEBOARD_RUN
+		elseif player.mo.state == S_PLAY_SPRING
+			or player.mo.state == S_PLAY_JUMP
+			or player.mo.state == S_PLAY_FALL then
+			player.mo.state = S_PLAY_POYO_SKATEBOARD_KICKFLIP
+		end
+	else
+		if player.mo.state == S_PLAY_POYO_SKATEBOARD_STND then
+			player.mo.state = S_PLAY_STND
+		elseif player.mo.state == S_PLAY_POYO_SKATEBOARD_WALK then
+			player.mo.state = S_PLAY_WALK
+		elseif player.mo.state == S_PLAY_POYO_SKATEBOARD_RUN then
+			player.mo.state = S_PLAY_RUN
+		elseif player.mo.state == S_PLAY_POYO_SKATEBOARD_KICKFLIP then
+			player.mo.state = S_PLAY_FALL
+		end
 	end
 
 	if not class.skateboarded then return end
@@ -210,8 +300,8 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		local nmomx = mo.momx
 		local nmomy = mo.momy
 
-		mo.momx = omomx + (nmomx - omomx) / 2
-		mo.momy = omomy + (nmomy - omomy) / 2
+		mo.momx = omomx + ((nmomx - omomx) * 5 / 4)
+		mo.momy = omomy + ((nmomy - omomy) * 5 / 4)
 	end
 
 	class:setSkatingStats(player, true)
@@ -229,7 +319,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 
 		local pointx, pointy = P_ClosestPointOnLine(mo.x, mo.y, line)
 
-		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y)
+		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y) - ANGLE_180
 		class.lastDrawangle = player.drawangle
 
 		local angle = class:getLineAngle(line)
@@ -243,7 +333,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		end
 
 		P_InstaThrust(mo, moving_towards, class.clingSpeed)
-		P_Thrust(mo, player.drawangle, -FU*4)
+		P_Thrust(mo, player.drawangle, FU*4)
 
 		class.clingSpeed = FixedMul($, FU - FU / 17)
 		class.clingTime = $ - 1
@@ -254,7 +344,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 
 			if momz > 0 then
 				mo.momz = 0
-				P_Thrust(mo, class.lastDrawangle, -momz)
+				P_Thrust(mo, class.lastDrawangle, momz)
 			end
 		end
 		if class.clingTime then
@@ -272,7 +362,18 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		PoyoPennynickel.AfterimageEffect(mo)
 		class:windline(2, FU*2)
 	end
-	player.normalspeed = max($, speed)
+
+	local normalspeed = speed
+	if player.powers[pw_super] or player.powers[pw_sneakers] then
+		normalspeed = $*3/5
+	end
+	if mo.eflags & MFE_UNDERWATER then
+		normalspeed = $*2
+	end
+
+	-- drain out momentum
+	normalspeed = FixedMul($, FU*500/503) -- dude...
+	player.normalspeed = max($, normalspeed)
 end)
 
 local function angleDiff(ang1, ang2)
@@ -309,7 +410,7 @@ PoyoPennynickel:addScript("PlayerBlocked", function(player, mobj, line)
 
 	if canClimbLine(mo, line, side) and P_LineIsBlocking(mo, line) then
 		local pointx, pointy = P_ClosestPointOnLine(mo.x, mo.y, line)
-		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y)
+		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y) - ANGLE_180
 
 		if mo.state ~= S_PLAY_POYO_SKATEBOARD_CLING then
 			local angle = class:getLineAngle(line)

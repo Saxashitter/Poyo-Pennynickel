@@ -17,6 +17,7 @@ Class.dashAttackDrawangle = 0
 Class.dashAttackAngle = 0
 
 local S_PLAY_POYO_DASH_ATTACK = freeslot("S_PLAY_POYO_DASH_ATTACK")
+local S_PLAY_POYO_DASH_ATTACK_PERFECT_JUMP = freeslot("S_PLAY_POYO_DASH_ATTACK_PERFECT_JUMP")
 local S_PLAY_POYO_LUNGE = freeslot("S_PLAY_POYO_LUNGE")
 
 local ANIMATION_LENGTH = 20 -- the animation length
@@ -73,6 +74,25 @@ states[S_PLAY_POYO_DASH_ATTACK] = {
 	action = animationAction
 }
 
+states[S_PLAY_POYO_DASH_ATTACK_PERFECT_JUMP] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_FIRE,
+	tics = 4,
+	nextstate = S_PLAY_POYO_DASH_ATTACK_PERFECT_JUMP,
+	action = function(mo)
+		if not mo.valid then return end
+		if not mo.player then return end
+
+		if mo.frame & FF_FRAMEMASK == A then
+			mo.tics = 6 -- we want the players to see a bit more of the handstate
+		end
+		if mo.frame & FF_FRAMEMASK == E then
+			mo.tics = -1
+		end
+		lungeAnimationAction(mo)
+	end
+}
+
 states[S_PLAY_POYO_LUNGE] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_FLY_,
@@ -81,12 +101,13 @@ states[S_PLAY_POYO_LUNGE] = {
 	action = lungeAnimationAction
 }
 
-function Class:doDashAttack()
+function Class:doDashAttack(perfect)
 	local mo = self.mo
 	local player = mo.player
 
 	self.airTransitionedDashAttack = false
 	mo.state = S_PLAY_POYO_DASH_ATTACK
+	mo.sprite2 = perfect and (mo.sprite2 & ~FF_FRAMEMASK)|SPR2_LAND or $
 
 	local momx, momy = self:getDashAttackSpeedXY()
 	local mo_speed = R_PointToDist2(0, 0, mo.momx, mo.momy)
@@ -113,7 +134,6 @@ PoyoPennynickel:addScript("PlayerSpin", function(player)
 	if class.skateboard then return end
 	if not class:canDashAggressiveAttack() then return end
 	if class.flags & PAB_BAT == 0 then return end
-
 	if mo.state == S_PLAY_POYO_DASH_ATTACK then return end
 	if mo.state == S_PLAY_POYO_SWING then return end
 
@@ -133,7 +153,13 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 		local t = FU - FixedDiv(mo.tics, ANIMATION_LENGTH)
 		local fixed_angle = AngleFixed(class.dashAttackDrawangle)
 		local angle = FixedAngle(ease.outexpo(t, fixed_angle, fixed_angle + (360 * FU) * 2))
+		local frame = A
 
+		if mo.tics <= 6 and mo.sprite2 & FF_FRAMEMASK == SPR2_MLEL then
+			frame = B
+		end
+
+		mo.frame = ($ & ~FF_FRAMEMASK)|frame
 		player.drawangle = angle
 
 		-- thrust player forward
@@ -226,6 +252,8 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		player.rmomx = mo.momx - player.cmomx
 		player.rmomy = mo.momy - player.cmomy
 
+		local sprite2 = mo.sprite2 & FF_FRAMEMASK
+
 		player.drawangle = player.mo.angle
 		P_DoJump(player, true)
 		S_StopSoundByID(mo, sfx_s3k7d)
@@ -235,8 +263,23 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 -- 		mo.tics = JUMP_TICS
 -- 		class.airTransitionedDashAttack = true
 		class.dashAttackSpeedLeniency = 10
-		mo.state = S_PLAY_POYO_LUNGE
+		if sprite2 == SPR2_LAND then
+			mo.state = S_PLAY_POYO_DASH_ATTACK_PERFECT_JUMP
+		else
+			mo.state = S_PLAY_POYO_LUNGE
+		end
 		-- mo.state = S_PLAY_ROLL
 		return true
 	end
+end)
+
+PoyoPennynickel:addScript("PlayerKilled", function(player, inflictor, target)
+	local mo = player.mo
+	local class = mo.poyoChar
+
+	if mo.state ~= S_PLAY_POYO_DASH_ATTACK then return end
+	if target.flags & (MF_SHOOTABLE|MF_ENEMY) == 0 then return end
+	if inflictor ~= mo then return end
+
+	mo.tics = ANIMATION_LENGTH -- min($ + 5, ANIMATION_LENGTH)
 end)

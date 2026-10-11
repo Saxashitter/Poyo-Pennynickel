@@ -31,6 +31,9 @@ Class.downwardsSwingMove = 0
 -- for input leniency!
 Class.dashAttackSwingLeniency = 0
 
+-- even if STR_ANIM is applied it STILL DOES BULLSHIT
+Class.isDashAttacking = false
+
 -- for checking if we hit a perfect
 Class.downwardsSwingFrame = 0
 
@@ -41,7 +44,7 @@ local ANIMATION_END_TICS = 9 -- the tics of the last frame of the animation
 local THRUST_SPEED = 25 * FU -- the speed that the player is launched after FRAME_START
 local SEMI_THRUST_SPEED = 12 * FU -- used for direction correction... not sure how to explain but its an additional thrust
 local THRUST_TIME = 20 -- the tics that speed remains for
-local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_FLOOR|STR_SPRING|STR_ANIM|STR_HEAVY|STR_GUARD -- the animation's pw_powers flags
+local ANIMATION_POWERS = STR_ATTACK|STR_WALL|STR_FLOOR|STR_SPRING|STR_ANIM|STR_GUARD -- the animation's pw_powers flags
 local ANIMATION_PANIM = PA_ABILITY -- the panim of the animation
 
 local function animationAction(mo)
@@ -51,6 +54,7 @@ local function animationAction(mo)
 	local frame = mo.frame & FF_FRAMEMASK
 	
 	mo.player.panim = ANIMATION_PANIM
+	mo.player.pflags = $|PF_NOJUMPDAMAGE
 
 	if frame == A then -- start of animation
 		mo.poyoChar.downwardsSwingMove = 0
@@ -160,14 +164,16 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 			end
 			mo.momx = $*2
 			mo.momy = $*2
-			class:doDashAttack()
+
 			PoyoPennynickel.DustEffect(mo, 8, 15*FU, FU * 35 / 42, 15)
 
 			if class.downwardsSwingMove then
 				class:perfectHUD()
 				S_StartSound(mo, sfx_py_ada)
 			end
+			class:doDashAttack(class.downwardsSwingMove > 0)
 		end
+
 		class.dashAttackSwingLeniency = false
 		S_StopSoundByID(mo, sfx_s3k8e)
 		return
@@ -180,6 +186,7 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	local angle = class.downwardsSwingAngle
 	player.drawangle = angle
 	class.downwardsSwingFrame = mo.frame & FF_FRAMEMASK
+	class.isDashAttacking = true
 
 	if class.downwardsSwingMove then
 		local tics = class.downwardsSwingMove

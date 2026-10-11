@@ -12,7 +12,7 @@ local UPWARDS_THRUST = 300 * FU
 local GRAVITY = FU * 3
 local GRAPPLE_HOP = 15 * FU
 local GRAPPLE_TICS = 18
-local GRAPPLE_LINE_DISTANCE = 2 * FU
+local GRAPPLE_LINE_DISTANCE = 38 * FU
 local GRAPPLE_TIMES = 3
 
 local GRPL_DIAGONAL = 0
@@ -23,6 +23,22 @@ local cling_hook = freeslot("sfx_py_hk1")
 local SPR_POYO_GRAPPLEHOOK = freeslot("SPR_POYO_GRAPPLEHOOK")
 local HOOK_FRAME = A
 local CHAIN_FRAME = B
+
+local FF_FRAMEMASK = FF_FRAMEMASK
+local FF_TRANSMASK = FF_TRANSMASK
+
+local MF2_TWOD = MF2_TWOD
+local BT_SPIN = BT_SPIN
+
+local pw_carry = pw_carry
+
+local R_PointToDist2 = R_PointToDist2
+local FixedMul = FixedMul
+local FixedDiv = FixedDiv
+local linear = ease.linear
+
+local P_XYMovement = P_XYMovement
+local P_ZMovement = P_ZMovement
 
 states[S_PLAY_POYO_GRAPPLE] = {
 	sprite = SPR_PLAY,
@@ -48,7 +64,7 @@ states[S_PLAY_POYO_UNGRAPPLED] = {
 		if not mo.valid then return end
 		if not mo.player then return end
 
-		mo.player.panim = PA_ROLL
+		mo.player.panim = PA_SPRING
 	end
 }
 
@@ -74,6 +90,82 @@ Class.grappleGravityDiv = FU
 -- DONT INIT HERE!!! it wont be a copied- over table
 --Class.grappleLines = {}
 
+-- local function getGrappleHookPosition(mobj, forward)
+-- 	local yaw = mobj.angle
+-- 	local pitch = mobj.spriteroll
+
+-- 	-- First rotate the local forward vector around the vertical axis.
+-- 	local horiz = FixedMul(forward, cos(pitch))
+-- 	local z = FixedMul(forward, sin(pitch))
+
+-- 	local x = FixedMul(horiz, cos(yaw))
+-- 	local y = FixedMul(horiz, sin(yaw))
+
+-- 	return mobj.x + x,
+-- 		mobj.y + y,
+-- 		mobj.z + mobj.height/2 + z
+-- end
+
+local z = 4
+local rotations = {
+	{x = -11, y = 85, z = z},
+	{x = -10, y = 84, z = z},
+	{x = -13, y = 83, z = 0},
+	{x = -1, y = 84, z = z, behind = true},
+	{x = 10, y = 85, z = z, behind = true},
+	{x = 10, y = 84, z = z, behind = true},
+	{x = 12, y = 84, z = 0},
+	{x = 4, y = 82, z = z},
+}
+
+-- COM_AddCommand("poyo_grappleoffset", function(player, rot, x, y, z)
+-- 	if not rot and not x and not y and not z then
+-- 		print("Usage: poyo_grappleoffset <rotation 1-8> <x> <y> <z>")
+-- 		return
+-- 	end
+
+-- 	rot = tonumber(rot)
+-- 	x = tonumber(x)
+-- 	y = tonumber(y)
+-- 	z = tonumber(z)
+
+-- 	if not rot or rot < 1 or rot > 8 then
+-- 		print("Rotation must be between 1 and 8.")
+-- 		return
+-- 	end
+
+-- 	if x ~= nil then
+-- 		rotations[rot].x = x
+-- 	end
+-- 	if y ~= nil then
+-- 		rotations[rot].y = y
+-- 	end
+-- 	if z ~= nil then
+-- 		rotations[rot].z = z
+-- 	end
+
+-- 	print(string.format(
+-- 		"Grapple rotation %d offset set to X:%d Y:%d Z:%d",
+-- 		rot, rotations[rot].x, rotations[rot].y, rotations[rot].z
+-- 	))
+-- end)
+
+-- COM_AddCommand("poyo_grappleoffsets", function(player)
+-- 	print("=== Poyo Grapple Rotation Offsets ===")
+
+-- 	for i = 1, 8 do
+-- 		local offset = rotations[i]
+
+-- 		print(string.format(
+-- 			"Rotation %d: X:%d Y:%d Z:%d",
+-- 			i,
+-- 			offset.x,
+-- 			offset.y,
+-- 			offset.z
+-- 		))
+-- 	end
+-- end)
+
 local function getGrappleLinePositionOffset(mo)
 	local facingang = R_PointToAngle(mo.x, mo.y) - mo.player.drawangle
 	local spriteRot = ((facingang + ANGLE_202h)>>29) + 1
@@ -81,17 +173,7 @@ local function getGrappleLinePositionOffset(mo)
 	if mo.sprite2 ~= SPR2_TAL5 then
 		return mo.x, mo.y, mo.z
 	end
-
-	local rotations = {
-		{x = -11, y = 87},
-		{x = -14, y = 87},
-		{x = -12, y = 87},
-		{x = -3, y = 87, behind = true},
-		{x = 10, y = 85, behind = true},
-		{x = 10, y = 83, behind = true},
-		{x = 12, y = 87},
-		{x = 8, y = 87},
-	}
+	
 	local x = mo.x
 	local y = mo.y
 	local z = mo.z
@@ -105,13 +187,10 @@ local function getGrappleLinePositionOffset(mo)
 		local sideY = P_ReturnThrustY(nil, camera.angle - ANGLE_90, rotations[spriteRot].x * mo.scale)
 		local upZ = rotations[spriteRot].y * mo.scale
 
-		local forward = -mo.scale * 2
-		if rotations[spriteRot].behind then
-			forward = -$
-		end
+		local forward = mo.scale*rotations[spriteRot].z
 
-		local forwX = P_ReturnThrustX(nil, camera.angle, forward)
-		local forwY = P_ReturnThrustY(nil, camera.angle, forward)
+		local forwX = P_ReturnThrustX(nil, mo.player.drawangle, forward)
+		local forwY = P_ReturnThrustY(nil, mo.player.drawangle, forward)
 
 		x = $ + sideX + forwX
 		y = $ + sideY + forwY
@@ -129,28 +208,34 @@ local function manageGrappleLines(player)
 	local moZ = mo.z + mo.height / 2
 	local mobjZ = mobj.z + mobj.height / 2
 
-	local distanceXY = R_PointToDist2(mo.x, mo.y, mobj.x, mobj.y)
+	local lx, ly, lz = getGrappleLinePositionOffset(mo)
+
+	local distanceXY = R_PointToDist2(lx, ly, mobj.x, mobj.y)
 	local distanceXYZ = R_PointToDist2(0, moZ, distanceXY, mobjZ)
 	local lineDistance = FixedMul(GRAPPLE_LINE_DISTANCE, mo.scale)
 
-	local lx, ly, lz = getGrappleLinePositionOffset(mo)
+	local angle = R_PointToAngle2(lx, ly, mobj.x, mobj.y)
+	local aiming = R_PointToAngle2(0, 0, distanceXY, mobjZ-lz)
+
+	local lmx = lx + (mobj.x - lx) / 2
+	local lmy = ly + (mobj.y - ly) / 2
+	local lmz = lz + (mobj.z - lz) / 2
 
 	local linesBetween = distanceXYZ / lineDistance
 	for i = 1, linesBetween do
 		local t = FixedDiv(i-1, linesBetween)
 
 		local line = class.grappleLines[i]
-		local x = ease.linear(t, lx, mobj.x)
-		local y = ease.linear(t, ly, mobj.y)
-		local z = ease.linear(t, lz, mobjZ)
+		local x = linear(t, lx, mobj.x)
+		local y = linear(t, ly, mobj.y)
+		local z = linear(t, lz, mobjZ)
 
 		if not line or not line.valid then
 			-- create line
-			line = P_SpawnMobjFromMobj(mo, x - mo.x, y - mo.y, z - mo.z, MT_RAY)
+			line = P_SpawnMobjFromMobj(mo, x - mo.x, y - mo.y, z - mo.z, MT_THOK)
 			line.fuse = -1
-			line.scale = mo.scale / 2
 			line.sprite = SPR_POYO_GRAPPLEHOOK
-			line.frame = ($ & ~(FF_FRAMEMASK|FF_TRANSMASK))|CHAIN_FRAME
+			line.frame = ($ & ~(FF_FRAMEMASK|FF_TRANSMASK))|CHAIN_FRAME|FF_PAPERSPRITE
 			line.flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_NOBLOCKMAP
 			line.flags2 = 0
 			line.radius = FU
@@ -160,12 +245,19 @@ local function manageGrappleLines(player)
 			P_MoveOrigin(line, x, y, z)
 		end
 
+		-- line.scale = mo.scale / 2
+		line.angle = angle
+		if P_MobjFlip(line) == -1 then
+			line.spriteroll = InvAngle(aiming)
+		else
+			line.spriteroll = aiming
+		end
 		line.fuse = -1
 		line.tics = 2
 	end
 
-	if #class.grappleLines >= linesBetween then
-		for i = linesBetween, #class.grappleLines do
+	if #class.grappleLines > linesBetween then
+		for i = linesBetween+1, #class.grappleLines do
 			local line = class.grappleLines[i]
 
 			if line and line.valid then
@@ -197,6 +289,7 @@ local function manageGrapple(player)
 		mobj.inited = true
 		mobj.sprite = SPR_POYO_GRAPPLEHOOK
 		mobj.frame = ($ & ~(FF_FRAMEMASK|FF_TRANSMASK))|HOOK_FRAME
+		mobj.hittics = 0
 
 		class.grappleMobj = mobj
 	end
@@ -236,7 +329,12 @@ local function manageGrapple(player)
 		local uy = FixedDiv(dy, dist)
 		local uz = FixedDiv(dz, dist)
 
-		if player.cmd.buttons & BT_JUMP == 0 then
+		local twod = false
+		if mo.flags2 & MF2_TWOD or twodlevel then
+			twod = true
+		end
+
+		if player.cmd.buttons & BT_JUMP == 0 or (not mobj.hitsector and mobj.hittics <= 0) then
 			player.powers[pw_flashing] = 20
 
 -- 			if class.grappleHeldTics <= 2 then
@@ -246,10 +344,11 @@ local function manageGrapple(player)
 
 			-- lets cap the players momentum
 			local speed = abs(mo.momz) -- R_PointToDist2(0, 0, R_PointToDist2(0, 0, mo.momx, mo.momy), mo.momz)
-			local cap = 17*mo.scale
+			local cap = 15*mo.scale
 			local mult = FU*5/4
 
 			if speed >= cap then
+				print(speed/FU)
 				local div = FixedDiv(speed, cap)
 				div = FixedMul($, mult)
 	
@@ -258,6 +357,7 @@ local function manageGrapple(player)
 			else
 				mo.state = S_PLAY_FALL
 			end
+
 			return
 		end
 
@@ -282,7 +382,7 @@ local function manageGrapple(player)
 		class.grappleHeldTics = $ + 1
 
 		-- manage player grappling friction and speed...
-		local speed = 350 * mo.scale
+		local speed = 325 * mo.scale
 		if player.cmd.forwardmove or player.cmd.sidemove then
 			local player_speed = FixedHypot(FixedHypot(mo.momx,mo.momy), mo.momz)
 			local angle = player.cmd.angleturn<<16 + R_PointToAngle2(0, 0, player.cmd.forwardmove << 16, -player.cmd.sidemove << 16)
@@ -298,7 +398,9 @@ local function manageGrapple(player)
 				local sine = sin(angle)
 
 				mo.momx = $ + FixedMul(accelspeed, cosine)
-				mo.momy = $ + FixedMul(accelspeed, sine)
+				if not twod then
+					mo.momy = $ + FixedMul(accelspeed, sine)
+				end
 			end
 
 				
@@ -341,6 +443,10 @@ local function manageGrapple(player)
 			mo.momy = y - mo.y
 			mo.momz = z - mo.z
 
+			if twod then
+				mo.momy = 0
+			end
+
 			P_XYMovement(mo)
 			P_ZMovement(mo)
 
@@ -353,6 +459,9 @@ local function manageGrapple(player)
 				mo.momx = $ - FixedMul(vDotU, ux)
 				mo.momy = $ - FixedMul(vDotU, uy)
 				mo.momz = $ - FixedMul(vDotU, uz)
+				if twod then
+					mo.momy = 0
+				end
 			end
 		end
 
@@ -360,9 +469,9 @@ local function manageGrapple(player)
 		return
 	end
 
-	mobj.momx = ease.linear(FU/3, $, targetX - mobj.x)
-	mobj.momy = ease.linear(FU/3, $, targetY - mobj.y)
-	mobj.momz = ease.linear(FU/3, $, targetZ - mobj.z)
+	mobj.momx = linear(FU/3, $, targetX - mobj.x)
+	mobj.momy = linear(FU/3, $, targetY - mobj.y)
+	mobj.momz = linear(FU/3, $, targetZ - mobj.z)
 	mobj.angle = R_PointToAngle2(0, 0, mobj.momx, mobj.momy)
 
 	-- snap z before xy
@@ -375,38 +484,86 @@ local function manageGrapple(player)
 	end
 
 	-- lets check if theres a collision between the player and the thing
-	local col = {
-		x = mo.x,
-		y = mo.y,
-		z = mo.z,
-		radius = mobj.radius,
-		height = mobj.height,
-		tracer = mo
-	}
-	local result, result_angle, result_x, result_y, result_z, result_target = SAXA_CheckCollisionOnPosition(col, mobj, 128)
-	if result then
-		mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT
-		P_SetOrigin(mobj, result_x, result_y, result_z)
-		mobj.hit = true
-		if result_target then
-			mobj.ox = result_x - result_target.x
-			mobj.oy = result_y - result_target.y
-			mobj.oz = result_z - result_target.z
+-- 	local col = {
+-- 		x = mo.x,
+-- 		y = mo.y,
+-- 		z = mo.z,
+-- 		radius = mobj.radius,
+-- 		height = mobj.height,
+-- 		tracer = mo
+-- 	}
+-- 	local result, result_angle, result_x, result_y, result_z, result_target = SAXA_CheckCollisionOnPosition(col, mobj, 128)
+-- 	if result then
+-- 		mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT
+-- 		P_SetOrigin(mobj, result_x, result_y, result_z)
+-- 		mobj.hit = true
+-- 		if result_target then
+-- 			mobj.ox = result_x - result_target.x
+-- 			mobj.oy = result_y - result_target.y
+-- 			mobj.oz = result_z - result_target.z
 
-			mobj.target = result_target
-		end
-	end
+-- 			mobj.target = result_target
+-- 		end
+-- 	end
+
+	local ceilhit = false
+	local floorhit = false
+	local ceiltex = ""
+	local floortex = ""
+	local sec = mobj.subsector.sector
 
 	-- BEFORE WE DO that check... lets check if it hits the floor or ceiling
 	if mobj.z <= mobj.floorz or mobj.z + mobj.height >= mobj.ceilingz then
-		mobj.flags = $|MF_NOCLIP|MF_NOCLIPHEIGHT
 		mobj.hit = true
+		mobj.hitsector = true
+
+		if mobj.z + mobj.height >= mobj.ceilingz then
+			local lowestZ = INT32_MAX
+
+			ceilhit = true
+			ceiltex = sec.ceilingpic
+
+			for rover in sec.ffloors()
+				if not (rover.flags & FF_EXISTS and rover.flags & FF_BLOCKPLAYER) then continue end
+
+				local z = rover.bottomheight
+				if rover.b_slope then
+					z = P_GetZAt(rover.b_slope, mobj.x, mobj.y)
+				end
+
+				if (mobj.z <= z) and z < lowestZ then
+					lowestZ = z
+					ceiltex = rover.bottompic
+				end
+			end
+		elseif mobj.z <= mobj.floorz then
+			local highestZ = -INT32_MAX
+
+			floorhit = true
+			floortex = sec.floorpic
+
+			for rover in sec.ffloors()
+				if not (rover.flags & FF_EXISTS and rover.flags & FF_BLOCKPLAYER) then continue end
+				
+				local z = rover.topheight
+				if rover.t_slope then
+					z = P_GetZAt(rover.t_slope, mobj.x, mobj.y)
+				end
+				
+				if (mobj.z+mobj.height >= z) and z > highestZ then
+					highestZ = z
+					floortex = rover.toppic
+				end
+			end
+		end
 	end
 
 	if mobj.hit then
 		S_StopSoundByID(mo, start_hook)
 
-		if mobj.hitline and (mobj.hitline.flags & ML_NOCLIMB or P_CheckSkyHit(mobj, mobj.hitline)) then
+		if (mobj.hitline and (mobj.hitline.flags & ML_NOCLIMB or P_CheckSkyHit(mobj, mobj.hitline)))
+		or (ceilhit and ceiltex == "F_SKY1")
+		or (floorhit and floortex == "F_SKY1") then
 -- 			player.drawangle = R_PointToAngle2(mo.x, mo.y, mobj.x, mobj.y)
 			player.mo.state = S_PLAY_POYO_FAILED_GRAPPLE
 			P_SetObjectMomZ(player.mo, 8*FU)
@@ -453,7 +610,7 @@ local function manageGrapple(player)
 			mo.momz = $ - FixedMul(vDotU, uz)
 
 			-- thanks ai... now lets multiply the speed
-			local mult = FU*5/4
+			local mult = FU*3/2
 			mo.momx = FixedMul($, mult)
 			mo.momy = FixedMul($, mult)
 			mo.momz = FixedMul($, mult)
@@ -533,7 +690,7 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 	class.grappleTimes = $ + 1
 	class.grappleHeldTics = 0
 
-	player.pflags = ($|PF_THOKKED) & ~PF_STARTJUMP
+	player.pflags = ($|PF_THOKKED|PF_NOJUMPDAMAGE) & ~PF_STARTJUMP
 	-- P_SetObjectMomZ(mo, GRAPPLE_HOP, mo.momz * P_MobjFlip(mo) > 0)
 	mo.state = S_PLAY_POYO_GRAPPLE
 	S_StartSound(mo, start_hook)
@@ -544,6 +701,7 @@ end)
 PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
+
 
 	if P_IsObjectOnGround(mo)
 	or player.powers[pw_carry] then
@@ -567,7 +725,6 @@ PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
 		end
 		return
 	end
-
 	manageGrapple(player)
 end)
 

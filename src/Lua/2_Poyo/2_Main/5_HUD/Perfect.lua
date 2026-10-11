@@ -8,10 +8,7 @@ local PERFECT_RISE_TICS = 6
 Class.perfectTics = 0
 
 function Class:perfectHUD()
-	local mo = self.mo
-	local class = mo.poyoChar
-
-	class.perfectTics = PERFECT_TICS
+	self.perfectTics = PERFECT_TICS
 end
 
 PoyoPennynickel:addScript("PlayerPostUpdate", function(player)
@@ -53,6 +50,7 @@ addHook("HUD", function(v, player, cam)
 	local sy = result.y
 
 	sy = $ + ease.outcubic(rise_t, 16*FU, 0)
+	sy = $ - 10 * FU
 
 	local perfect = v.cachePatch("POYO_PERFECT")
 

@@ -23,7 +23,7 @@ SkyNum = 1
 Character
 SkinName = poyo
 DisplayName = Poyo
-PlayerText = ^5Poyo ^0uses his bat, grappling hook, and skateboard to reach speeds comparable to the rest. A challenge for even the pros.
+PlayerText = ^5Poyo^0 is the weakest at first. But once mastered, ^5Poyo^0 becomes UNSTOPPABLE
 
 ^5Ability:^0 Baseball Bat
 Swing your bat with different variations based on what your doing using Spin.

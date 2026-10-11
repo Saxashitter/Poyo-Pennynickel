@@ -3,9 +3,10 @@ local Class = PoyoPennynickel.Class
 
 function Class:canDashAggressiveAttack()
 	-- are we over the speed?
-	local speed = R_PointToDist2(0, 0, self.mo.momx - self.mo.player.cmomx, self.mo.momy - self.mo.player.cmomy)
+	local mo = self.mo
+	local player = mo.player
 
-	if speed < 7 * self.mo.scale then
+	if player.speed < player.runspeed then
 		return
 	end
 
