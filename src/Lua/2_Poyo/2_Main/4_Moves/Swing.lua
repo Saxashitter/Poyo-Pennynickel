@@ -74,7 +74,7 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 
-	if mo.state == S_PLAY_POYO_SWING then
-		mo.friction = FRICTION
-	end
+-- 	if mo.state == S_PLAY_POYO_SWING then
+-- 		mo.friction = FRICTION
+-- 	end
 end)

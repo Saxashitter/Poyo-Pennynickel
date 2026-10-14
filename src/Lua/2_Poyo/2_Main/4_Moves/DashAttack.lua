@@ -118,6 +118,8 @@ function Class:doDashAttack(perfect)
 	mo.momy = FixedMul($, div)
 	P_Thrust(mo, mo.angle, 8 * mo.scale)
 
+	player.charflags = $|SF_NOSKID
+
 	S_StartSound(mo, sfx_s238)
 end
 
@@ -206,6 +208,9 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 -- 			P_SetObjectMomZ(mo, FixedDiv(momz, mo.scale))
 -- 		end
 	else
+		if player.charflags & SF_NOSKID then
+			player.charflags = $ & ~SF_NOSKID
+		end
 		S_StopSoundByID(mo, sfx_s3k7d)
 		class.airTransitionedDashAttack = false
 	end

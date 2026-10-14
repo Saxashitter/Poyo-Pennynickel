@@ -20,12 +20,7 @@ local GRPL_DIAGONAL = 0
 local start_hook = freeslot("sfx_py_hk2")
 local cling_hook = freeslot("sfx_py_hk1")
 
-local SPR_POYO_GRAPPLEHOOK = freeslot("SPR_POYO_GRAPPLEHOOK")
-local HOOK_FRAME = A
-local CHAIN_FRAME = B
-
-local FF_FRAMEMASK = FF_FRAMEMASK
-local FF_TRANSMASK = FF_TRANSMASK
+local GRAPPLE_CHAIN_TICS = PoyoPennynickel.GRAPPLE_CHAIN_TICS
 
 local MF2_TWOD = MF2_TWOD
 local BT_SPIN = BT_SPIN
@@ -200,10 +195,14 @@ local function getGrappleLinePositionOffset(mo)
 	return x, y, z
 end
 
+-- strings the chain between poyo's hand and the hook.
+-- links are kept for the whole grapple. when the rope gets shorter the spare ones are
+-- hidden, not removed, so swinging around doesn't keep spawning and removing them
 local function manageGrappleLines(player)
 	local mo = player.mo
 	local class = mo.poyoChar
 	local mobj = class.grappleMobj
+	local lines = class.grappleLines
 
 	local moZ = mo.z + mo.height / 2
 	local mobjZ = mobj.z + mobj.height / 2
@@ -213,57 +212,50 @@ local function manageGrappleLines(player)
 	local distanceXY = R_PointToDist2(lx, ly, mobj.x, mobj.y)
 	local distanceXYZ = R_PointToDist2(0, moZ, distanceXY, mobjZ)
 	local lineDistance = FixedMul(GRAPPLE_LINE_DISTANCE, mo.scale)
-
-	local angle = R_PointToAngle2(lx, ly, mobj.x, mobj.y)
-	local aiming = R_PointToAngle2(0, 0, distanceXY, mobjZ-lz)
-
-	local lmx = lx + (mobj.x - lx) / 2
-	local lmy = ly + (mobj.y - ly) / 2
-	local lmz = lz + (mobj.z - lz) / 2
-
 	local linesBetween = distanceXYZ / lineDistance
-	for i = 1, linesBetween do
-		local t = FixedDiv(i-1, linesBetween)
 
-		local line = class.grappleLines[i]
-		local x = linear(t, lx, mobj.x)
-		local y = linear(t, ly, mobj.y)
-		local z = linear(t, lz, mobjZ)
+	-- every link points the same way, so work that out once
+	local angle = R_PointToAngle2(lx, ly, mobj.x, mobj.y)
+	local roll = R_PointToAngle2(0, 0, distanceXY, mobjZ - lz)
+	if P_MobjFlip(mo) == -1 then
+		roll = InvAngle($)
+	end
+
+	-- how far apart the links are
+	local stepx, stepy, stepz = 0, 0, 0
+	if linesBetween > 0 then
+		stepx = (mobj.x - lx) / linesBetween
+		stepy = (mobj.y - ly) / linesBetween
+		stepz = (mobjZ - lz) / linesBetween
+	end
+
+	for i = 1, linesBetween do
+		local line = lines[i]
+		local x = lx + stepx * (i - 1)
+		local y = ly + stepy * (i - 1)
+		local z = lz + stepz * (i - 1)
 
 		if not line or not line.valid then
-			-- create line
-			line = P_SpawnMobjFromMobj(mo, x - mo.x, y - mo.y, z - mo.z, MT_THOK)
-			line.fuse = -1
-			line.sprite = SPR_POYO_GRAPPLEHOOK
-			line.frame = ($ & ~(FF_FRAMEMASK|FF_TRANSMASK))|CHAIN_FRAME|FF_PAPERSPRITE
-			line.flags = MF_NOCLIP|MF_NOCLIPHEIGHT|MF_NOGRAVITY|MF_NOBLOCKMAP
-			line.flags2 = 0
-			line.radius = FU
-			line.height = FU
-			class.grappleLines[i] = line
+			line = P_SpawnMobjFromMobj(mo, 0, 0, 0, MT_POYO_GRAPPLECHAIN)
+			P_SetOrigin(line, x, y, z)
+			lines[i] = line
 		else
 			P_MoveOrigin(line, x, y, z)
 		end
 
-		-- line.scale = mo.scale / 2
+		line.flags2 = $ & ~MF2_DONTDRAW
 		line.angle = angle
-		if P_MobjFlip(line) == -1 then
-			line.spriteroll = InvAngle(aiming)
-		else
-			line.spriteroll = aiming
-		end
-		line.fuse = -1
-		line.tics = 2
+		line.spriteroll = roll
+		line.tics = GRAPPLE_CHAIN_TICS
 	end
 
-	if #class.grappleLines > linesBetween then
-		for i = linesBetween+1, #class.grappleLines do
-			local line = class.grappleLines[i]
+	-- hide the links the rope is too short for right now
+	for i = linesBetween + 1, #lines do
+		local line = lines[i]
 
-			if line and line.valid then
-				P_RemoveMobj(line)
-			end
-			class.grappleLines[i] = nil
+		if line and line.valid then
+			line.flags2 = $|MF2_DONTDRAW
+			line.tics = GRAPPLE_CHAIN_TICS
 		end
 	end
 end
@@ -282,13 +274,9 @@ local function manageGrapple(player)
 		end
 
 		mobj = P_SpawnMobjFromMobj(mo, 0,0,0, MT_POYO_GRAPPLER)
-		mobj.fuse = -1 -- dont die
-		mobj.tics = -1 -- seriously
 		mobj.tracer = mo
 		mobj.color = mo.color
 		mobj.inited = true
-		mobj.sprite = SPR_POYO_GRAPPLEHOOK
-		mobj.frame = ($ & ~(FF_FRAMEMASK|FF_TRANSMASK))|HOOK_FRAME
 		mobj.hittics = 0
 
 		class.grappleMobj = mobj
@@ -573,6 +561,8 @@ local function manageGrapple(player)
 		S_StartSound(mo, cling_hook)
 		class.successfulGrapple = true
 		mo.state = S_PLAY_POYO_GRAPPLED
+		-- so the hook moves with what it's stuck to (polyobjects, moving floors, fofs...)
+		PoyoPennynickel.AnchorGrappleHook(mobj)
 -- 		mo.momz = $/3
 		player.pflags = $ & ~PF_STARTJUMP
 

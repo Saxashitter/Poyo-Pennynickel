@@ -44,7 +44,7 @@ addHook("HUD", function(v, player, cam)
 	end
 
 	local result = PoyoPennynickel.WorldToScreen(v, player, cam, {x=x,y=y,z=z})
-	if not result.onscreen then return end
+	if not result.visible then return end
 
 	local sx = result.x
 	local sy = result.y

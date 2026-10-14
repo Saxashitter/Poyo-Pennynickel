@@ -2,11 +2,8 @@ local PoyoPennynickel = PoyoPennynickel
 local Class = PoyoPennynickel.Class
 
 Class.skateboardFrictionMult = FU * 100 / 95
-Class.clingTime = 0
-Class.clingSpeed = 0
 Class.skateboard = false
 Class.skateboarded = false -- so we can do hop off skateboard + grapple...
-Class.lastDrawangle = 0 -- for momentum conversion thing
 
 local S_PLAY_POYO_SKATEBOARD_STND = freeslot("S_PLAY_POYO_SKATEBOARD_STND")
 local S_PLAY_POYO_SKATEBOARD_WALK = freeslot("S_PLAY_POYO_SKATEBOARD_WALK")
@@ -87,10 +84,6 @@ states[S_PLAY_POYO_SKATEBOARD_CLING] = {
 		mo.player.panim = PA_ROLL
 	end
 }
-
-local function canClimbLine(mo, line, side)
-	return line and line.valid and side and side.valid and line.flags & ML_NOCLIMB == 0 and not P_CheckSkyHit(mo, line)
-end
 
 function Class:setSkatingStats(skate)
 	local player = self.mo.player
@@ -175,6 +168,9 @@ PoyoPennynickel:addScript("PlayerJump", function(player)
 		local mo = player.mo
 		local class = mo.poyoChar
 		local pflags = player.pflags & PF_THOKKED
+
+		-- the cling moves us by hand, so get our sliding speed back to jump off with
+		class:restoreClingMomentum()
 		player.pflags = $ & ~(PF_JUMPED)
 
 		local omomz = mo.momz
@@ -306,53 +302,12 @@ PoyoPennynickel:addScript("PlayerMobjUpdate", function(player)
 
 	class:setSkatingStats(player, true)
 
-	-- wall cling....
-	local line = lines[player.lastlinehit]
-	local side = sides[player.lastsidehit]
-
-	if mo.state == S_PLAY_POYO_SKATEBOARD_CLING
-	and class.clingTime
-	and canClimbLine(mo, line, side) then
-		if not S_SoundPlaying(mo, sfx_s3k55) then
-			S_StartSoundAtVolume(mo, sfx_s3k55, 50)
-		end
-
-		local pointx, pointy = P_ClosestPointOnLine(mo.x, mo.y, line)
-
-		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y) - ANGLE_180
-		class.lastDrawangle = player.drawangle
-
-		local angle = class:getLineAngle(line)
-		local speedAngle = R_PointToAngle2(0, 0, mo.momx, mo.momy)
-
-		local moving_towards = angle - ANGLE_90
-		local moving_behind = FixedMul(class.clingSpeed, cos(speedAngle - moving_towards)) < 0
-
-		if moving_behind then
-			moving_towards = angle + ANGLE_90
-		end
-
-		P_InstaThrust(mo, moving_towards, class.clingSpeed)
-		P_Thrust(mo, player.drawangle, FU*4)
-
-		class.clingSpeed = FixedMul($, FU - FU / 17)
-		class.clingTime = $ - 1
-	else
-		if mo.state == S_PLAY_POYO_SKATEBOARD_CLING then
-			mo.state = S_PLAY_FALL
-			local momz = FixedDiv(mo.momz, mo.scale) * P_MobjFlip(mo)
-
-			if momz > 0 then
-				mo.momz = 0
-				P_Thrust(mo, class.lastDrawangle, momz)
-			end
-		end
-		if class.clingTime then
-			class.clingTime = 0
-		end
-	end
-
 	local speed = R_PointToDist2(0, 0, mo.momx - player.cmomx, mo.momy - player.cmomy)
+
+	-- the cling moves us by hand, so momentum doesn't show how fast we're sliding
+	if class:isClinging() then
+		speed = class.clingSpeed
+	end
 
 	-- fix to scale
 	speed = FixedDiv($, mo.scale)
@@ -385,65 +340,6 @@ local function angleDiff(ang1, ang2)
 	end
 	return AngleFixed(adiff)
 end
-
--- code somewhat inspired by mario bros since their wall cling works amazingly
-PoyoPennynickel:addScript("PlayerBlocked", function(player, mobj, line)
-	local mo = player.mo
-	local class = player.mo.poyoChar
-
-	if not class.skateboard then return end
-	if P_IsObjectOnGround(mo) then return end
-
-	local prevline = player.lastlinehit
-	local prevside = player.lastsidehit
-	
-
-	player.lastlinehit = -1
-	player.lastsidehit = -1
-
-	local omomx = mo.momx
-	local omomy = mo.momy
-	P_SlideMove(mo)
-
-	local line = lines[player.lastlinehit]
-	local side = sides[player.lastsidehit]
-
-	if canClimbLine(mo, line, side) and P_LineIsBlocking(mo, line) then
-		local pointx, pointy = P_ClosestPointOnLine(mo.x, mo.y, line)
-		player.drawangle = R_PointToAngle2(pointx, pointy, mo.x, mo.y) - ANGLE_180
-
-		if mo.state ~= S_PLAY_POYO_SKATEBOARD_CLING then
-			local angle = class:getLineAngle(line)
-			local magnitude = R_PointToDist2(0, 0, omomx, omomy)
-			local speedAngle = R_PointToAngle2(0, 0, omomx, omomy)
-
-			-- check against the default assumption (angle - 90) first
-			local moving_towards = angle - ANGLE_90
-			local moving_behind = FixedMul(magnitude, cos(speedAngle - moving_towards)) < 0
-
-			if moving_behind then
-				moving_towards = angle + ANGLE_90
-			end
-
-			local speed = FixedMul(magnitude, cos(speedAngle - moving_towards))
-
-			class.clingSpeed = abs(speed)
-			mo.state = S_PLAY_POYO_SKATEBOARD_CLING
-			P_SetObjectMomZ(mo, 5 * FU, true)
-			player.pflags = $ & ~PF_STARTJUMP
-
-			S_StartSound(mo, sfx_s3k4a)
-		end
-
-		player.powers[pw_pushing] = 5
-		class.clingTime = 5
-	else
-		player.lastlinehit = prevline
-		player.lastsidehit = prevside
-	end
-
-	return true
-end)
 
 PoyoPennynickel:addScript("PlayerBlocked", function(player)
 	local mo = player.mo

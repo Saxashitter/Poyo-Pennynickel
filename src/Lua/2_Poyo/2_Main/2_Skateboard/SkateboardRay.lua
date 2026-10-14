@@ -8,7 +8,7 @@ local function getLineAngle(mo, line)
 	local whichside = P_PointOnLineSide(mo.x, mo.y, line)
 	local angle = R_PointToAngle2(line.v1.x, line.v1.y, line.v2.x, line.v2.y)
 
-	angle = $ + (ANGLE_90 * (whichside and -1 or 1))
+	angle = $ + (ANGLE_90 * (whichside == 1 and -1 or 1))
 
 	return angle
 end
@@ -43,7 +43,7 @@ addHook("MobjMoveBlocked", function(cast, mobj, line)
 -- 		local whichside = P_PointOnLineSide(cast.x, cast.y, line)
 -- 		local angle = R_PointToAngle2(line.v1.x, line.v1.y, line.v2.x, line.v2.y)
 
--- 		angle = $ + (ANGLE_90 * (whichside and -1 or 1))
+-- 		angle = $ + (ANGLE_90 * (whichside == 1 and -1 or 1))
 
 -- 		local lx, ly = P_ClosestPointOnLine(cast.x, cast.y, line)
 -- 		local angle = R_PointToAngle2(cast.x, cast.y, lx, ly)
@@ -93,7 +93,7 @@ function PoyoPennynickel.CheckLine(mo, line, allownoclimb)
 	
 	-- FOF checks
 	for rover in sec.ffloors()
-		if not (rover.flags & FF_EXISTS and rover.flags & FF_BLOCKPLAYER) then continue end
+		if rover.flags & FF_EXISTS == 0 or rover.flags & FF_BLOCKPLAYER == 0 then continue end
 		
 		if (checkz[2] > rover.bottomheight)
 		and (checkz[1] < rover.topheight)
