@@ -4,10 +4,6 @@ local Class = PoyoPennynickel.Class
 local emote = {}
 
 local S_PLAY_POYO_CARAMELLDANSEN = freeslot("S_PLAY_POYO_CARAMELLDANSEN")
-
-local sfx_py_cdn = freeslot("sfx_py_cdn")
-sfxinfo[sfx_py_cdn].caption = "look harry had a vagina malfunction"
-
 states[S_PLAY_POYO_CARAMELLDANSEN] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_BNCE,
@@ -23,9 +19,6 @@ states[S_PLAY_POYO_CARAMELLDANSEN] = {
 
 		if frame == C or frame == F then
 			mo.tics = -1
-		end
-		if frame == B or frame == E then
-			mo.tics = 2
 		end
 
 		local sides = {}
@@ -121,5 +114,5 @@ end
 
 emote.variants = {
 	[0] = {name = "Caramelldansen", bpm = 164735, song = "PY_CDN"},
-	[1] = {name = "Spiritual Domination", bpm = 155766, song = "PY_TST"}
+	[1] = {name = "Pregnant Hyena", bpm = 200000, song = "PY_CD2"}
 }

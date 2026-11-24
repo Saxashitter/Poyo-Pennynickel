@@ -51,7 +51,7 @@ states[S_PLAY_POYO_SKATEBOARD_RUN] = {
 states[S_PLAY_POYO_SKATEBOARD_KICKFLIP] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_FRUN,
-	tics = 2,
+	tics = 4,
 	nextstate = S_PLAY_POYO_SKATEBOARD_KICKFLIP,
 	action = function(mo)
 		if not mo.valid then return end
@@ -113,9 +113,6 @@ local function triggerSkateboard(player)
 
 	if class.skateboard then
 		class:setSkatingStats(true)
-		if player.pflags & PF_JUMPED then
-			player.pflags = $|PF_THOKKED
-		end
 
 		if not P_IsObjectOnGround(mo) then
 			mo.state = S_PLAY_POYO_SKATEBOARD_EQUIP_AIR
@@ -128,7 +125,6 @@ local function triggerSkateboard(player)
 			class.skateboarded = true
 			player.pflags = $ & ~(PF_JUMPED|PF_SPINNING)
 			P_DoJump(player, true)
-			player.pflags = $|PF_THOKKED
 
 			-- not holding jump when you do it? just give the player the full jump anyway
 			if player.cmd.buttons & BT_JUMP == 0 then

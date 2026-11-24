@@ -29,7 +29,7 @@ states[S_PLAY_POYO_UHOH] = {
 
 -- t is fixed_t, 0 to FRACUNIT
 local function LerpAngle(a, b, t)
-    local diff = b - a -- wraps automatically to the shortest signed delta
+    local diff = b - a
     return a + FixedMul(diff, t)
 end
 

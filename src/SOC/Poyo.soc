@@ -3,6 +3,8 @@ Levelname = Poyo Tutorial
 Act = 0
 Music = TUTORL
 NextLevel = 1
+levelselect = 1
+novisitneeded = true
 TypeOfLevel = Singleplayer
 HideInStats = true
 SkyNum = 99
@@ -12,12 +14,27 @@ Lua.PoyoPennynickel_Tutorial = true
 
 Level P1
 Levelname = Refill Mart
+SubTitle = Welcome to Refill Mart!
 Act = 0
-Music = GFZ1
+Music = REFMAR
 NextLevel = 1
 TypeOfLevel = Singleplayer,Co-op
 HideInStats = true
 SkyNum = 1
+levelselect = 1
+novisitneeded = true
+
+Level P2
+Levelname = Refill Mart NIGHT
+Act = 0
+SubTitle = - CITY NIGHT LIFE -
+Music = REFMN
+NextLevel = 1
+TypeOfLevel = Singleplayer,Co-op
+HideInStats = true
+SkyNum = 99
+levelselect = 1
+novisitneeded = true
 
 
 Character

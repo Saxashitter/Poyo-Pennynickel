@@ -1,28 +1,18 @@
--- Wall cling: hit a wall in the air while skating and Poyo sticks to it, sliding along it
--- with the speed the wall was hit with. That speed is carried from wall to wall, so the
--- slide follows corners and walls that tilt inwards or outwards.
---
--- How it works, every tic while clinging:
---   1. pickClingWall decides which wall we're on (stay, hop onto a wall in our way, or
---      carry on around the corner at the end of the wall)
---   2. slideAlongWall moves us along it and keeps us pressed against it
--- The direction of travel is remembered (clingDir) instead of being guessed from
--- momentum each tic, since the engine's wall sliding scrambles momentum all the time.
 local PoyoPennynickel = PoyoPennynickel
 local Class = PoyoPennynickel.Class
 
-Class.clingTime = 0 -- tics left before we let go; refilled while we have a wall
-Class.clingSpeed = 0 -- how fast we slide along the wall
-Class.clingDir = 0 -- the angle we're sliding towards
-Class.clingLine = nil -- the wall we're sliding on
-Class.clingBlockedTics = 0 -- how many tics in a row something has stopped our slide
+Class.clingTime = 0
+Class.clingSpeed = 0
+Class.clingDir = 0
+Class.clingLine = nil
+Class.clingBlockedTics = 0
 
 local CLING_GRACE = 3 -- tics we can go without a wall before letting go
 local CLING_REACH = 16 * FU -- how far from a wall we can be and still hold onto it
 local CLING_TOUCH = 4 * FU -- how close counts as touching a wall
 local CLING_HOVER = FU -- how far off the wall we slide, see slideAlongWall
-local CLING_SPEED_KEEP = FU - FU / 17 -- speed kept each tic
-local CLING_HOP = 5 * FU -- little hop when grabbing the wall
+local CLING_SPEED_KEEP = FU - FU / 40 -- speed kept each tic
+local CLING_HOP = 0 * FU -- little hop when grabbing the wall
 local CLING_LEDGE_BELOW = 16 * FU -- how far under the top of a wall our feet can be to climb over it
 local CLING_LEDGE_ABOVE = 24 * FU -- how far over the top of a wall our feet can be to still land on it
 
@@ -641,7 +631,7 @@ function Class:tryStartCling(momx, momy)
 	self.clingBlockedTics = 0
 
 	mo.state = S_PLAY_POYO_SKATEBOARD_CLING
-	P_SetObjectMomZ(mo, CLING_HOP, true)
+	P_SetObjectMomZ(mo, CLING_HOP, mo.momz * P_MobjFlip(mo) > 0)
 	player.pflags = $ & ~PF_STARTJUMP
 	player.drawangle = facingAngle(mo, line)
 

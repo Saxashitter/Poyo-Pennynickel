@@ -147,6 +147,7 @@ end, COM_LOCAL)
 
 addHook("KeyDown", function(keyevent)
 	if isdedicatedserver then return end
+	if ZE2 and ZE2:isGametype() then return end
 	if keyevent.repeated then
 		if keyevent.name == "f1" then return true end -- foolproof...
 -- 		return

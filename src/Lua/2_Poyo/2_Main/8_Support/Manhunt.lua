@@ -15,7 +15,6 @@ local function onLoad()
 		if not runnerPlayer then return end
 		if not runnerPlayer.valid then return end
 		if not runnerPlayer.poyo_secondcolor then return end
-		
 
 		local tics = leveltime - MHN.lastManStandingTime
 
